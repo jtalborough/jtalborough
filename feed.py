@@ -18,6 +18,7 @@ LIMIT = 8
 SKIP = {f"{USER}/{USER}"}
 API = "https://api.github.com"
 WEEKS = 12
+COMMIT_CAP = 2000
 TECH_ORDER = (
     "Ansible",
     "k3s",
@@ -61,6 +62,7 @@ TEMPLATE_WORDS = {
     "work",
     "last",
     "days",
+    "commit",
     "commits",
     "across",
     "active",
@@ -231,21 +233,28 @@ def private_output():
 def build_private(token):
     today = utc_today()
     history = load_history(HISTORY)
-    snapshot, banned = scan_private(token, today)
-    counts = backfill_counts(token, today)
+    snapshot, banned, counts = scan_private(token, today)
+    unit = "commit"
+    if counts is None and not any(row["commits"] for row in history["weeks"]):
+        counts = backfill_counts(token, today)
+        unit = "contribution"
     if counts is not None:
         apply_weeks(history, counts)
+    if snapshot is None:
+        snapshot = latest_snapshot(history)
+    if snapshot is None:
+        raise RuntimeError("private")
     snapshot = scrub_snapshot(snapshot, banned)
     snapshot["theme"] = theme_for(snapshot["tech"])
     if snapshot["theme"].lower() in {name.lower() for name in banned if name}:
         snapshot["theme"] = ""
     upsert_snapshot(history, snapshot)
     rows = week_rows(history, today)
-    markdown = render_private(latest_snapshot(history), rows)
+    markdown = render_private(latest_snapshot(history), rows, unit)
     files = {HISTORY: dump_history(history)}
     svg = ""
     if series_complete(rows):
-        svg = activity_svg([(row["week"], row["contributions"]) for row in rows])
+        svg = activity_svg([(row["week"], row["commits"]) for row in rows], unit)
         files[CHART] = svg
     blob = "\n".join((markdown, dump_history(history), svg))
     if leaks(blob, banned):
@@ -255,12 +264,16 @@ def build_private(token):
 
 def scan_private(token, today):
     now = datetime.now(timezone.utc)
-    since_30 = (now - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    since_7 = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    since_30 = now - timedelta(days=30)
+    since_7 = now - timedelta(days=7)
+    since_window = datetime.combine(window_start(today), datetime.min.time(), tzinfo=timezone.utc)
     commits_7 = commits_30 = repos_7 = repos_30 = 0
     languages = {}
     tech = set()
     banned = set()
+    weeks = {week: 0 for week in recent_week_starts(today)}
+    counted = 0
+    failed = 0
     for repo in list_private_repos(token):
         full_name = repo.get("full_name") or ""
         owner = ((repo.get("owner") or {}).get("login")) or ""
@@ -272,9 +285,14 @@ def scan_private(token, today):
         if owner and owner != USER:
             banned.add(owner)
         try:
-            got_7, got_30 = commit_counts(token, full_name, since_30, since_7)
+            times = authored_times(token, full_name, since_window)
         except Exception:
+            failed += 1
             continue
+        counted += 1
+        got_7, got_30, by_week = fold_times(times, since_7, since_30, weeks)
+        for week, count in by_week.items():
+            weeks[week] += count
         commits_7 += got_7
         commits_30 += got_30
         if got_7:
@@ -308,7 +326,9 @@ def scan_private(token, today):
         "tech": ordered_tech(tech),
         "theme": theme_for(tech),
     }
-    return snapshot, banned
+    if counted == 0 and failed:
+        return None, banned, None
+    return snapshot, banned, weeks
 
 
 def list_private_repos(token):
@@ -327,22 +347,49 @@ def list_private_repos(token):
     return repos
 
 
-def commit_counts(token, full_name, since_30, since_7):
+def authored_times(token, full_name, since):
     quoted = urllib.parse.quote(full_name, safe="/")
-    since = urllib.parse.quote(since_30, safe="")
-    url = f"{API}/repos/{quoted}/commits?author={USER}&since={since}&per_page=100"
-    total_30 = 0
-    total_7 = 0
-    while url and total_30 < 400:
+    stamp = urllib.parse.quote(since.strftime("%Y-%m-%dT%H:%M:%SZ"), safe="")
+    url = f"{API}/repos/{quoted}/commits?author={USER}&since={stamp}&per_page=100"
+    times = []
+    while url and len(times) < COMMIT_CAP:
         page, url = fetch(url, token)
-        if not isinstance(page, list):
+        if not isinstance(page, list) or not page:
             break
         for item in page:
-            total_30 += 1
-            authored = ((item.get("commit") or {}).get("author") or {}).get("date") or ""
-            if authored >= since_7:
-                total_7 += 1
-    return total_7, total_30
+            when = parse_utc(((item.get("commit") or {}).get("author") or {}).get("date"))
+            if when is not None:
+                times.append(when)
+            if len(times) >= COMMIT_CAP:
+                break
+        del page
+    return times
+
+
+def fold_times(times, since_7, since_30, week_keys):
+    got_7 = got_30 = 0
+    weeks = {week: 0 for week in week_keys}
+    for when in times:
+        if when >= since_7:
+            got_7 += 1
+        if when >= since_30:
+            got_30 += 1
+        week = week_start(when.date()).isoformat()
+        if week in weeks:
+            weeks[week] += 1
+    return got_7, got_30, weeks
+
+
+def parse_utc(value):
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        stamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    return stamp.astimezone(timezone.utc)
 
 
 def repo_languages(token, full_name):
@@ -607,8 +654,11 @@ def load_history(path):
     for row in data.get("weeks") or []:
         if not isinstance(row, dict) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("week") or "")):
             continue
+        raw = row.get("commits")
+        if raw is None:
+            raw = row.get("contributions")
         try:
-            weeks.append({"week": row["week"], "contributions": max(0, int(row.get("contributions") or 0))})
+            weeks.append({"week": row["week"], "commits": max(0, int(raw or 0))})
         except (TypeError, ValueError):
             continue
     snapshots.sort(key=lambda snap: snap["date"])
@@ -664,31 +714,22 @@ def upsert_snapshot(history, snapshot):
 
 
 def apply_weeks(history, counts):
-    by_week = {row["week"]: row for row in history["weeks"]}
+    by_week = {row["week"]: {"week": row["week"], "commits": row["commits"]} for row in history["weeks"]}
     for week, count in counts.items():
-        by_week[week] = {"week": week, "contributions": max(0, int(count))}
+        by_week[week] = {"week": week, "commits": max(0, int(count))}
     history["weeks"] = [by_week[key] for key in sorted(by_week)]
 
 
 def week_rows(history, today):
-    snaps = {}
-    for snap in history["snapshots"]:
-        current = snaps.get(snap["week"])
-        if current is None or snap["date"] >= current["date"]:
-            snaps[snap["week"]] = snap
-    contrib = {row["week"]: row["contributions"] for row in history["weeks"]}
+    commits = {row["week"]: row["commits"] for row in history["weeks"]}
     return [
-        {
-            "week": week,
-            "contributions": contrib[week] if week in contrib else None,
-            "snapshot": snaps.get(week),
-        }
+        {"week": week, "commits": commits[week] if week in commits else None}
         for week in recent_week_starts(today)
     ]
 
 
 def series_complete(rows):
-    return all(row["contributions"] is not None for row in rows)
+    return all(row["commits"] is not None for row in rows)
 
 
 def latest_snapshot(history):
@@ -697,7 +738,7 @@ def latest_snapshot(history):
     return history["snapshots"][-1]
 
 
-def render_private(snapshot, rows):
+def render_private(snapshot, rows, unit="commit"):
     lines = ["### Private work", ""]
     if snapshot:
         lines.append(
@@ -712,8 +753,8 @@ def render_private(snapshot, rows):
         if snapshot.get("theme"):
             lines.extend(["", f"This week: {snapshot['theme']}."])
     if series_complete(rows):
-        lines.extend(["", "![Private contributions over the last 12 weeks](data/activity.svg)"])
-    week_lines = [line for row in reversed(rows) if (line := week_line(row))]
+        lines.extend(["", f"![Private {unit}s over the last 12 weeks](data/activity.svg)"])
+    week_lines = [line for row in reversed(rows) if (line := week_line(row, unit))]
     if week_lines:
         lines.extend(["", "<details>", "<summary>Past weeks</summary>", ""])
         lines.extend(week_lines)
@@ -721,27 +762,11 @@ def render_private(snapshot, rows):
     return "\n".join(lines)
 
 
-def week_line(row):
-    snap = row.get("snapshot")
-    known = row["contributions"] is not None
-    if not known and not snap:
+def week_line(row, unit="commit"):
+    count = row.get("commits")
+    if count is None:
         return ""
-    parts = [f"Week of {row['week']}:"]
-    if known:
-        parts.append(f"{plural(row['contributions'], 'contribution')}.")
-    if snap:
-        parts.append(
-            f"As of {snap['date']}: {plural(snap['commits_7d'], 'commit')} across {plural(snap['repos_7d'], 'active private repo')} in the last 7 days, "
-            f"{plural(snap['commits_30d'], 'commit')} across {plural(snap['repos_30d'], 'active private repo')} in the last 30 days."
-        )
-        language_line = format_languages(snap.get("languages") or [])
-        if language_line:
-            parts.append(language_line)
-        if snap.get("tech"):
-            parts.append("Tech: " + ", ".join(snap["tech"]) + ".")
-        if snap.get("theme"):
-            parts.append(f"Theme: {snap['theme']}.")
-    return "- " + " ".join(parts)
+    return f"- Week of {row['week']}: {plural(count, unit)}."
 
 
 def plural(count, word):
@@ -754,7 +779,7 @@ def format_languages(languages):
     return "Languages: " + " · ".join(f"{item['name']} {item['pct']}%" for item in languages) + "."
 
 
-def activity_svg(series):
+def activity_svg(series, unit="commit"):
     width = 720
     height = 128
     left, right, top, bottom = 36, 8, 18, 28
@@ -765,10 +790,10 @@ def activity_svg(series):
     bar_w = (plot_w - gap * (count - 1)) / count
     peak = max([value for _, value in series] + [1])
     font = "ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace"
-    desc = " ".join(f"Week of {week}: {plural(value, 'contribution')}." for week, value in series)
+    desc = " ".join(f"Week of {week}: {plural(value, unit)}." for week, value in series)
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" role="img">',
-        "<title>Private contributions over the last 12 weeks</title>",
+        f"<title>Private {unit}s over the last 12 weeks</title>",
         f"<desc>{desc}</desc>",
         f'<text x="0" y="12" fill="#8b949e" font-family="{font}" font-size="11">{peak}</text>',
         f'<line x1="{left}" y1="{top + plot_h}" x2="{width - right}" y2="{top + plot_h}" stroke="#d0d7de"/>',
@@ -780,7 +805,7 @@ def activity_svg(series):
         label = f"{int(week[5:7])}/{int(week[8:10])}"
         parts.append(
             f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" rx="2" fill="#3fb950">'
-            f"<title>Week of {week}: {plural(value, 'contribution')}</title></rect>"
+            f"<title>Week of {week}: {plural(value, unit)}</title></rect>"
         )
         parts.append(
             f'<text x="{x + bar_w / 2:.1f}" y="{height - 8}" text-anchor="middle" fill="#8b949e" '
