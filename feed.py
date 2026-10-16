@@ -5,20 +5,18 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 USER = "jtalborough"
 README = Path(__file__).with_name("README.md")
-HISTORY = Path(__file__).parent / "data" / "feed-history.json"
-CHART = Path(__file__).parent / "data" / "activity.svg"
+DATA = Path(__file__).parent / "data"
 START = "<!-- FEED:START -->"
 END = "<!-- FEED:END -->"
-LIMIT = 8
 SKIP = {f"{USER}/{USER}"}
 API = "https://api.github.com"
-WEEKS = 12
 COMMIT_CAP = 2000
+TECH_CAP = 10
 TECH_ORDER = (
     "Ansible",
     "k3s",
@@ -34,14 +32,6 @@ TECH_ORDER = (
     "PostgreSQL",
     "C#/.NET",
 )
-INFRA = {"Ansible", "k3s", "Kubernetes", "Helm", "Docker", "Fleet", "GitHub Actions"}
-APP = {"Python", "Flask", "TypeScript", "React", "PostgreSQL"}
-THEMES = {
-    "infra automation",
-    "application services",
-    "control software",
-    "automation and services",
-}
 DEPS = {
     "flask": "Flask",
     "psycopg": "PostgreSQL",
@@ -70,13 +60,6 @@ TEMPLATE_WORDS = {
     "languages",
     "tech",
     "mix",
-    "this",
-    "week",
-    "contributions",
-    "past",
-    "weeks",
-    "theme",
-    "over",
     "the",
 }
 
@@ -85,26 +68,22 @@ def main():
     text = README.read_text()
     if START not in text or END not in text or text.find(START) > text.find(END):
         raise SystemExit("feed markers missing")
-    body, files = collect_all()
-    updated = splice(text, body)
+    updated = splice(text, collect())
     if updated != text:
         README.write_text(updated)
-    for path, content in files.items():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        if not path.exists() or path.read_text() != content:
-            path.write_text(content)
+    retire_chart()
 
 
-def collect_all():
+def collect():
     source = os.environ.get("FEED_SOURCE", "github")
     if source != "github":
         raise SystemExit(f"unknown FEED_SOURCE: {source}")
     public = github_activity()
-    private_md, files = private_output()
+    private_md = private_output()
     body = "\n".join(public) if public else "No recent public activity."
     if private_md:
         body = f"{body}\n\n{private_md.strip()}"
-    return body, files
+    return body
 
 
 def splice(text, body):
@@ -113,22 +92,165 @@ def splice(text, body):
     return f"{pre}{START}\n{body.strip()}\n{END}{post}"
 
 
+def retire_chart():
+    for name in ("activity.svg", "feed-history.json"):
+        path = DATA / name
+        if path.exists():
+            path.unlink()
+    if DATA.is_dir() and not any(DATA.iterdir()):
+        DATA.rmdir()
+
+
 def github_activity():
-    events = fetch_json(f"{API}/users/{USER}/events/public?per_page=40")
-    if not isinstance(events, list):
-        raise SystemExit("unexpected events payload")
-    events.sort(key=lambda event: event.get("created_at") or "", reverse=True)
-    chosen = []
-    seen = set()
-    for event in events:
-        key = event_key(event)
-        if key is None or key in seen:
-            continue
-        seen.add(key)
-        chosen.append(event)
-        if len(chosen) == LIMIT:
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    chosen = {}
+    for event in public_events(cutoff):
+        keep(chosen, event, replace=True)
+    for event in search_events(cutoff):
+        keep(chosen, event, replace=False)
+    for event in push_events(cutoff):
+        keep(chosen, event, replace=True)
+    ordered = sorted(chosen.values(), key=lambda event: event.get("created_at") or "", reverse=True)
+    return [line for event in ordered if (line := format_event(event))]
+
+
+def keep(chosen, event, replace):
+    key = event_key(event)
+    if key is None:
+        return
+    current = chosen.get(key)
+    if current is None:
+        chosen[key] = event
+        return
+    if replace and (event.get("created_at") or "") > (current.get("created_at") or ""):
+        chosen[key] = event
+
+
+def public_events(cutoff):
+    stamp = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+    url = f"{API}/users/{USER}/events/public?per_page=100"
+    found = []
+    while url and len(found) < 300:
+        page, url = fetch(url, public_token())
+        if not isinstance(page, list):
+            raise SystemExit("unexpected events payload")
+        if not page:
             break
-    return [line for event in chosen if (line := format_event(event))]
+        for event in page:
+            created = event.get("created_at") or ""
+            if created < stamp:
+                return found
+            found.append(event)
+    return found
+
+
+def search_events(cutoff):
+    day = cutoff.strftime("%Y-%m-%d")
+    query = urllib.parse.quote(f"author:{USER} is:public updated:>={day}")
+    url = f"{API}/search/issues?q={query}&per_page=50&sort=updated"
+    found = []
+    try:
+        while url and len(found) < 100:
+            data, url = fetch(url, public_token())
+            if not isinstance(data, dict):
+                break
+            for item in data.get("items") or []:
+                event = issue_event(item, cutoff)
+                if event:
+                    found.append(event)
+    except Exception:
+        return found
+    return found
+
+
+def issue_event(item, cutoff):
+    repo_url = item.get("repository_url") or ""
+    marker = "/repos/"
+    if marker not in repo_url or not item.get("number"):
+        return None
+    full = repo_url.split(marker, 1)[1]
+    stamp = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+    state = item.get("state") or ""
+    created = item.get("created_at") or ""
+    updated = item.get("updated_at") or ""
+    closed = item.get("closed_at") or ""
+    if state == "closed" and closed >= stamp:
+        action, when = "closed", closed
+    elif created >= stamp:
+        action, when = "opened", created
+    elif updated >= stamp:
+        action, when = "updated", updated
+    else:
+        return None
+    if item.get("pull_request"):
+        return {
+            "type": "PullRequestEvent",
+            "created_at": when,
+            "repo": {"name": full},
+            "payload": {"action": action, "number": item["number"]},
+        }
+    return {
+        "type": "IssuesEvent",
+        "created_at": when,
+        "repo": {"name": full},
+        "payload": {
+            "action": action,
+            "issue": {
+                "number": item["number"],
+                "title": item.get("title") or "",
+                "html_url": item.get("html_url") or "",
+            },
+        },
+    }
+
+
+def push_events(cutoff):
+    stamp = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+    token = public_token()
+    events = []
+    try:
+        repos = list_public_repos(token)
+    except Exception:
+        return events
+    for repo in repos:
+        full = repo.get("full_name") or ""
+        if not full or full in SKIP:
+            continue
+        try:
+            commit = newest_commit(token, full, stamp)
+        except Exception:
+            continue
+        if not commit:
+            continue
+        sha = commit.get("sha") or ""
+        authored = ((commit.get("commit") or {}).get("author") or {}).get("date") or ""
+        if not sha or authored < stamp:
+            continue
+        events.append(
+            {
+                "type": "PushEvent",
+                "created_at": authored,
+                "repo": {"name": full},
+                "payload": {"head": sha},
+            }
+        )
+    return events
+
+
+def newest_commit(token, full_name, since):
+    quoted = urllib.parse.quote(full_name, safe="/")
+    stamp = urllib.parse.quote(since, safe="")
+    url = f"{API}/repos/{quoted}/commits?since={stamp}&per_page=100"
+    pages = 0
+    while url and pages < 5:
+        page, url = fetch(url, token)
+        pages += 1
+        if not isinstance(page, list) or not page:
+            return None
+        for commit in page:
+            if (commit.get("author") or {}).get("login") == USER:
+                return commit
+    return None
 
 
 def event_key(event):
@@ -213,71 +335,48 @@ def plain(text):
 
 
 def fetch_json(url):
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    data, _ = fetch(url, token)
+    data, _ = fetch(url, public_token())
     return data
+
+
+def public_token():
+    return os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
 
 
 def private_output():
     token = os.environ.get("PRIVATE_FEED_TOKEN", "").strip()
     if not token:
         print("private section skipped")
-        return "", {}
+        return ""
     try:
         return build_private(token)
     except Exception:
         print("private section skipped")
-        return "", {}
+        return ""
 
 
 def build_private(token):
-    today = utc_today()
-    history = load_history(HISTORY)
-    snapshot, banned, counts = scan_private(token, today)
-    unit = "commit"
-    if counts is None and not any(row["commits"] for row in history["weeks"]):
-        counts = backfill_counts(token, today)
-        unit = "contribution"
-    if counts is not None:
-        apply_weeks(history, counts)
-    if snapshot is None:
-        snapshot = latest_snapshot(history)
-    if snapshot is None:
+    commits, repos, activity_banned = private_commits(token)
+    languages, tech_counts, stack_banned = stack_signals(public_token(), token)
+    banned = activity_banned | stack_banned
+    shares = scrub_languages(language_shares(languages), banned)
+    tech = scrub_names(top_tech(tech_counts), banned)
+    if commits is None and not shares and not tech:
         raise RuntimeError("private")
-    snapshot = scrub_snapshot(snapshot, banned)
-    snapshot["theme"] = theme_for(snapshot["tech"])
-    if snapshot["theme"].lower() in {name.lower() for name in banned if name}:
-        snapshot["theme"] = ""
-    upsert_snapshot(history, snapshot)
-    rows = week_rows(history, today)
-    markdown = render_private(latest_snapshot(history), rows, unit)
-    files = {HISTORY: dump_history(history)}
-    svg = ""
-    if series_complete(rows):
-        svg = activity_svg([(row["week"], row["commits"]) for row in rows], unit)
-        files[CHART] = svg
-    blob = "\n".join((markdown, dump_history(history), svg))
-    if leaks(blob, banned):
+    markdown = render_private(commits, repos, shares, tech)
+    if leaks(markdown, banned):
         raise RuntimeError("sanitizer")
-    return markdown, files
+    return markdown
 
 
-def scan_private(token, today):
-    now = datetime.now(timezone.utc)
-    since_30 = now - timedelta(days=30)
-    since_7 = now - timedelta(days=7)
-    since_window = datetime.combine(window_start(today), datetime.min.time(), tzinfo=timezone.utc)
-    commits_7 = commits_30 = repos_7 = repos_30 = 0
-    languages = {}
-    tech = set()
+def private_commits(token):
+    since = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    commits = repos = counted = failed = 0
     banned = set()
-    weeks = {week: 0 for week in recent_week_starts(today)}
-    counted = 0
-    failed = 0
     for repo in list_private_repos(token):
         full_name = repo.get("full_name") or ""
-        owner = ((repo.get("owner") or {}).get("login")) or ""
         name = repo.get("name") or ""
+        owner = ((repo.get("owner") or {}).get("login")) or ""
         if full_name:
             banned.add(full_name)
         if name:
@@ -285,50 +384,85 @@ def scan_private(token, today):
         if owner and owner != USER:
             banned.add(owner)
         try:
-            times = authored_times(token, full_name, since_window)
+            got = count_authored(token, full_name, since)
         except Exception:
             failed += 1
             continue
         counted += 1
-        got_7, got_30, by_week = fold_times(times, since_7, since_30, weeks)
-        for week, count in by_week.items():
-            weeks[week] += count
-        commits_7 += got_7
-        commits_30 += got_30
-        if got_7:
-            repos_7 += 1
-        if got_30:
-            repos_30 += 1
-        if got_30 <= 0:
-            continue
-        try:
-            for language, count in repo_languages(token, full_name).items():
-                languages[language] = languages.get(language, 0) + count
-            found, paths = repo_tech(token, repo)
-            tech.update(found)
-            banned.update(paths)
-        except Exception:
-            continue
-    if languages.get("Python"):
-        tech.add("Python")
-    if languages.get("TypeScript"):
-        tech.add("TypeScript")
-    if languages.get("C#"):
-        tech.add("C#/.NET")
-    snapshot = {
-        "date": today.isoformat(),
-        "week": week_start(today).isoformat(),
-        "commits_7d": commits_7,
-        "commits_30d": commits_30,
-        "repos_7d": repos_7,
-        "repos_30d": repos_30,
-        "languages": language_shares(languages),
-        "tech": ordered_tech(tech),
-        "theme": theme_for(tech),
-    }
+        commits += got
+        if got:
+            repos += 1
     if counted == 0 and failed:
-        return None, banned, None
-    return snapshot, banned, weeks
+        return None, None, banned
+    return commits, repos, banned
+
+
+def count_authored(token, full_name, since):
+    quoted = urllib.parse.quote(full_name, safe="/")
+    stamp = urllib.parse.quote(since, safe="")
+    url = f"{API}/repos/{quoted}/commits?author={USER}&since={stamp}&per_page=100"
+    total = 0
+    while url and total < COMMIT_CAP:
+        page, url = fetch(url, token)
+        if not isinstance(page, list) or not page:
+            break
+        total += len(page)
+        del page
+    return min(total, COMMIT_CAP)
+
+
+def stack_signals(public, private):
+    languages = {}
+    tech_counts = {}
+    banned = set()
+    groups = []
+    try:
+        groups.append((list_public_repos(public), public, False))
+    except Exception:
+        pass
+    if private:
+        try:
+            groups.append((list_private_repos(private), private, True))
+        except Exception:
+            pass
+    seen = set()
+    for repos, token, secret in groups:
+        for repo in repos:
+            full_name = repo.get("full_name") or ""
+            if not full_name or full_name in seen:
+                continue
+            seen.add(full_name)
+            if secret:
+                name = repo.get("name") or ""
+                owner = ((repo.get("owner") or {}).get("login")) or ""
+                banned.add(full_name)
+                if name:
+                    banned.add(name)
+                if owner and owner != USER:
+                    banned.add(owner)
+            try:
+                found, paths = repo_tech(token, repo)
+                counts = repo_languages(token, full_name)
+            except Exception:
+                continue
+            for language, count in counts.items():
+                languages[language] = languages.get(language, 0) + count
+            if counts.get("Python"):
+                found.add("Python")
+            if counts.get("TypeScript"):
+                found.add("TypeScript")
+            if counts.get("C#"):
+                found.add("C#/.NET")
+            for name in found:
+                tech_counts[name] = tech_counts.get(name, 0) + 1
+            if secret:
+                banned.update(paths)
+            del paths
+    return languages, tech_counts, banned
+
+
+def list_public_repos(token):
+    return list_repos(f"{API}/users/{USER}/repos?type=owner&per_page=100", token, private=False)
 
 
 def list_private_repos(token):
@@ -336,60 +470,22 @@ def list_private_repos(token):
         f"{API}/user/repos?visibility=private&per_page=100"
         "&affiliation=owner,collaborator,organization_member"
     )
+    return list_repos(url, token, private=True)
+
+
+def list_repos(url, token, private):
     repos = []
     while url and len(repos) < 100:
         page, url = fetch(url, token)
         if not isinstance(page, list):
             break
         for repo in page:
-            if repo.get("private") and not repo.get("fork") and not repo.get("archived"):
-                repos.append(repo)
+            if repo.get("fork"):
+                continue
+            if private and not repo.get("private"):
+                continue
+            repos.append(repo)
     return repos
-
-
-def authored_times(token, full_name, since):
-    quoted = urllib.parse.quote(full_name, safe="/")
-    stamp = urllib.parse.quote(since.strftime("%Y-%m-%dT%H:%M:%SZ"), safe="")
-    url = f"{API}/repos/{quoted}/commits?author={USER}&since={stamp}&per_page=100"
-    times = []
-    while url and len(times) < COMMIT_CAP:
-        page, url = fetch(url, token)
-        if not isinstance(page, list) or not page:
-            break
-        for item in page:
-            when = parse_utc(((item.get("commit") or {}).get("author") or {}).get("date"))
-            if when is not None:
-                times.append(when)
-            if len(times) >= COMMIT_CAP:
-                break
-        del page
-    return times
-
-
-def fold_times(times, since_7, since_30, week_keys):
-    got_7 = got_30 = 0
-    weeks = {week: 0 for week in week_keys}
-    for when in times:
-        if when >= since_7:
-            got_7 += 1
-        if when >= since_30:
-            got_30 += 1
-        week = week_start(when.date()).isoformat()
-        if week in weeks:
-            weeks[week] += 1
-    return got_7, got_30, weeks
-
-
-def parse_utc(value):
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        stamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if stamp.tzinfo is None:
-        stamp = stamp.replace(tzinfo=timezone.utc)
-    return stamp.astimezone(timezone.utc)
 
 
 def repo_languages(token, full_name):
@@ -454,11 +550,18 @@ def tech_from_paths(paths):
             found.add("Ansible")
         if name.startswith("k3s") or "/k3s/" in f"/{lowered}":
             found.add("k3s")
-        if name in {"kustomization.yml", "kustomization.yaml", "chart.yaml"} or "/k8s/" in f"/{lowered}" or "/kubernetes/" in f"/{lowered}":
+        if (
+            name in {"kustomization.yml", "kustomization.yaml", "chart.yaml"}
+            or "/k8s/" in f"/{lowered}"
+            or "/kubernetes/" in f"/{lowered}"
+        ):
             found.add("Kubernetes")
         if name == "chart.yaml":
             found.add("Helm")
-        if name == "dockerfile" or name.startswith("dockerfile.") or name in {"docker-compose.yml", "docker-compose.yaml"}:
+        if name == "dockerfile" or name.startswith("dockerfile.") or name in {
+            "docker-compose.yml",
+            "docker-compose.yaml",
+        }:
             found.add("Docker")
         if name == "fleet.yaml":
             found.add("Fleet")
@@ -495,278 +598,53 @@ def read_text(token, full_name, path, ref):
     return raw.decode("utf-8", errors="ignore")
 
 
-def ordered_tech(found):
-    return [name for name in TECH_ORDER if name in found]
-
-
-def theme_for(tech):
-    names = set(tech)
-    infra = bool(names & INFRA)
-    app = bool(names & APP)
-    dotnet = "C#/.NET" in names
-    if infra and (app or dotnet):
-        theme = "automation and services"
-    elif infra:
-        theme = "infra automation"
-    elif dotnet:
-        theme = "control software"
-    elif app:
-        theme = "application services"
-    else:
-        theme = ""
-    return theme if theme in THEMES else ""
-
-
 def language_shares(byte_counts):
     total = sum(byte_counts.values())
     if total <= 0:
         return []
     ranked = sorted(byte_counts.items(), key=lambda item: (-item[1], item[0]))
-    floors = []
-    used = 0
-    for name, count in ranked[:4]:
+    shares = []
+    for name, count in ranked:
         pct = int(count * 100 / total)
         if pct <= 0:
             continue
-        floors.append({"name": name, "pct": pct})
-        used += pct
-    if floors and used < 100 and len(ranked) <= 4:
-        floors[0]["pct"] += 100 - used
-    return floors
+        shares.append({"name": name, "pct": pct})
+    return shares
 
 
-def backfill_counts(token, today):
-    start = window_start(today)
-    start_at = datetime(start.year, start.month, start.day, tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    end_at = datetime(today.year, today.month, today.day, 23, 59, 59, tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    try:
-        private_days = contribution_days(token, viewer=True, start=start_at, end=end_at)
-        public_token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
-        public_days = contribution_days(public_token, viewer=False, start=start_at, end=end_at)
-        if not calendar_covers(private_days, today) or not calendar_covers(public_days, today):
-            return None
-        return weekly_private_counts(private_days, public_days, today)
-    except Exception:
-        return None
+def top_tech(counts):
+    order = {name: index for index, name in enumerate(TECH_ORDER)}
+    ranked = sorted(
+        (name for name in counts if name in order),
+        key=lambda name: (-counts[name], order[name]),
+    )
+    return ranked[:TECH_CAP]
 
 
-def calendar_covers(days, today):
-    if not days:
-        return False
-    found = set()
-    for day in days:
-        try:
-            found.add(week_start(date.fromisoformat(day["date"])).isoformat())
-        except (TypeError, ValueError):
-            continue
-    return all(week in found for week in recent_week_starts(today))
-
-
-def weekly_private_counts(private_days, public_days, today):
-    start = window_start(today)
-    public = {day["date"]: int(day["contributionCount"]) for day in public_days}
-    totals = {}
-    for day in private_days:
-        day_name = day["date"]
-        if day_name > today.isoformat():
-            continue
-        count = max(0, int(day["contributionCount"]) - public.get(day_name, 0))
-        week = week_start(date.fromisoformat(day_name)).isoformat()
-        if week < start.isoformat():
-            continue
-        totals[week] = totals.get(week, 0) + count
-    for week in recent_week_starts(today):
-        totals.setdefault(week, 0)
-    return totals
-
-
-def contribution_days(token, viewer, start, end):
-    if viewer:
-        query = """
-        query($from: DateTime!, $to: DateTime!) {
-          viewer {
-            login
-            contributionsCollection(from: $from, to: $to) {
-              contributionCalendar { weeks { contributionDays { date contributionCount } } }
-            }
-          }
-        }
-        """
-        variables = {"from": start, "to": end}
-    else:
-        query = """
-        query($login: String!, $from: DateTime!, $to: DateTime!) {
-          user(login: $login) {
-            contributionsCollection(from: $from, to: $to) {
-              contributionCalendar { weeks { contributionDays { date contributionCount } } }
-            }
-          }
-        }
-        """
-        variables = {"login": USER, "from": start, "to": end}
-    payload = graphql(query, variables, token)
-    if not isinstance(payload, dict) or payload.get("errors"):
-        return None
-    root = (payload.get("data") or {}).get("viewer" if viewer else "user") or {}
-    if viewer and root.get("login") != USER:
-        return None
-    weeks = ((root.get("contributionsCollection") or {}).get("contributionCalendar") or {}).get("weeks") or []
-    days = []
-    for week in weeks:
-        for day in week.get("contributionDays") or []:
-            if day.get("date"):
-                days.append({"date": day["date"], "contributionCount": int(day.get("contributionCount") or 0)})
-    return days
-
-
-def graphql(query, variables, token):
-    body = json.dumps({"query": query, "variables": variables}).encode()
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-        "User-Agent": "jtalborough-feed",
-    }
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    request = urllib.request.Request(f"{API}/graphql", data=body, headers=headers)
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
-
-
-def load_history(path):
-    if not path.exists():
-        return {"snapshots": [], "weeks": []}
-    try:
-        data = json.loads(path.read_text())
-    except (json.JSONDecodeError, OSError):
-        return {"snapshots": [], "weeks": []}
-    if not isinstance(data, dict):
-        return {"snapshots": [], "weeks": []}
-    snapshots = []
-    for snap in data.get("snapshots") or []:
-        if not isinstance(snap, dict) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(snap.get("date") or "")):
-            continue
-        try:
-            snapshots.append(normalize_snapshot(snap))
-        except (TypeError, ValueError):
-            continue
-    weeks = []
-    for row in data.get("weeks") or []:
-        if not isinstance(row, dict) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("week") or "")):
-            continue
-        raw = row.get("commits")
-        if raw is None:
-            raw = row.get("contributions")
-        try:
-            weeks.append({"week": row["week"], "commits": max(0, int(raw or 0))})
-        except (TypeError, ValueError):
-            continue
-    snapshots.sort(key=lambda snap: snap["date"])
-    weeks.sort(key=lambda row: row["week"])
-    return {"snapshots": snapshots, "weeks": weeks}
-
-
-def normalize_snapshot(snap):
-    tech = [name for name in TECH_ORDER if name in (snap.get("tech") or [])]
-    theme = snap.get("theme") if snap.get("theme") in THEMES else ""
-    languages = []
-    for item in snap.get("languages") or []:
-        if not isinstance(item, dict):
-            continue
-        name = item.get("name")
-        if not isinstance(name, str) or not SAFE_LANGUAGE.fullmatch(name):
-            continue
-        languages.append({"name": name, "pct": max(0, min(100, int(item.get("pct") or 0)))})
-    day = date.fromisoformat(snap["date"])
-    week = snap.get("week")
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(week or "")):
-        week = week_start(day).isoformat()
-    return {
-        "commits_7d": max(0, int(snap.get("commits_7d") or 0)),
-        "commits_30d": max(0, int(snap.get("commits_30d") or 0)),
-        "date": snap["date"],
-        "languages": languages,
-        "repos_7d": max(0, int(snap.get("repos_7d") or 0)),
-        "repos_30d": max(0, int(snap.get("repos_30d") or 0)),
-        "tech": tech,
-        "theme": theme,
-        "week": week,
-    }
-
-
-def scrub_snapshot(snapshot, banned):
+def scrub_languages(languages, banned):
     banned_lower = {name.lower() for name in banned if name}
-    snapshot["languages"] = [
-        item for item in snapshot["languages"] if item["name"].lower() not in banned_lower
-    ]
-    snapshot["tech"] = [name for name in snapshot["tech"] if name.lower() not in banned_lower]
-    if snapshot["theme"].lower() in banned_lower:
-        snapshot["theme"] = ""
-    return snapshot
+    return [item for item in languages if item["name"].lower() not in banned_lower]
 
 
-def upsert_snapshot(history, snapshot):
-    history["snapshots"] = [
-        item for item in history["snapshots"] if item.get("date") != snapshot["date"]
-    ]
-    history["snapshots"].append(normalize_snapshot(snapshot))
-    history["snapshots"].sort(key=lambda item: item["date"])
+def scrub_names(names, banned):
+    banned_lower = {name.lower() for name in banned if name}
+    return [name for name in names if name.lower() not in banned_lower]
 
 
-def apply_weeks(history, counts):
-    by_week = {row["week"]: {"week": row["week"], "commits": row["commits"]} for row in history["weeks"]}
-    for week, count in counts.items():
-        by_week[week] = {"week": week, "commits": max(0, int(count))}
-    history["weeks"] = [by_week[key] for key in sorted(by_week)]
-
-
-def week_rows(history, today):
-    commits = {row["week"]: row["commits"] for row in history["weeks"]}
-    return [
-        {"week": week, "commits": commits[week] if week in commits else None}
-        for week in recent_week_starts(today)
-    ]
-
-
-def series_complete(rows):
-    return all(row["commits"] is not None for row in rows)
-
-
-def latest_snapshot(history):
-    if not history["snapshots"]:
-        return None
-    return history["snapshots"][-1]
-
-
-def render_private(snapshot, rows, unit="commit"):
+def render_private(commits, repos, languages, tech):
     lines = ["### Private work", ""]
-    if snapshot:
+    if commits is not None:
         lines.append(
-            f"Last 7 days: {plural(snapshot['commits_7d'], 'commit')} across {plural(snapshot['repos_7d'], 'active private repo')}. "
-            f"Last 30 days: {plural(snapshot['commits_30d'], 'commit')} across {plural(snapshot['repos_30d'], 'active private repo')}."
+            f"Last 30 days: {plural(commits, 'commit')} across {plural(repos, 'active private repo')}."
         )
-        language_line = format_languages(snapshot.get("languages") or [])
-        if language_line:
-            lines.extend(["", language_line])
-        if snapshot.get("tech"):
-            lines.extend(["", "Tech in the mix: " + ", ".join(snapshot["tech"]) + "."])
-        if snapshot.get("theme"):
-            lines.extend(["", f"This week: {snapshot['theme']}."])
-    if series_complete(rows):
-        lines.extend(["", f"![Private {unit}s over the last 12 weeks](data/activity.svg)"])
-    week_lines = [line for row in reversed(rows) if (line := week_line(row, unit))]
-    if week_lines:
-        lines.extend(["", "<details>", "<summary>Past weeks</summary>", ""])
-        lines.extend(week_lines)
-        lines.extend(["", "</details>"])
-    return "\n".join(lines)
-
-
-def week_line(row, unit="commit"):
-    count = row.get("commits")
-    if count is None:
+    language_line = format_languages(languages)
+    if language_line:
+        lines.extend(["", language_line])
+    if tech:
+        lines.extend(["", "Tech in the mix: " + ", ".join(tech) + "."])
+    if len(lines) == 2:
         return ""
-    return f"- Week of {row['week']}: {plural(count, unit)}."
+    return "\n".join(lines)
 
 
 def plural(count, word):
@@ -779,48 +657,8 @@ def format_languages(languages):
     return "Languages: " + " · ".join(f"{item['name']} {item['pct']}%" for item in languages) + "."
 
 
-def activity_svg(series, unit="commit"):
-    width = 720
-    height = 128
-    left, right, top, bottom = 36, 8, 18, 28
-    plot_w = width - left - right
-    plot_h = height - top - bottom
-    count = max(1, len(series))
-    gap = 8
-    bar_w = (plot_w - gap * (count - 1)) / count
-    peak = max([value for _, value in series] + [1])
-    font = "ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace"
-    desc = " ".join(f"Week of {week}: {plural(value, unit)}." for week, value in series)
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" role="img">',
-        f"<title>Private {unit}s over the last 12 weeks</title>",
-        f"<desc>{desc}</desc>",
-        f'<text x="0" y="12" fill="#8b949e" font-family="{font}" font-size="11">{peak}</text>',
-        f'<line x1="{left}" y1="{top + plot_h}" x2="{width - right}" y2="{top + plot_h}" stroke="#d0d7de"/>',
-    ]
-    for index, (week, value) in enumerate(series):
-        x = left + index * (bar_w + gap)
-        bar_h = 0 if value <= 0 else max(2, round(plot_h * value / peak))
-        y = top + plot_h - bar_h
-        label = f"{int(week[5:7])}/{int(week[8:10])}"
-        parts.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" rx="2" fill="#3fb950">'
-            f"<title>Week of {week}: {plural(value, unit)}</title></rect>"
-        )
-        parts.append(
-            f'<text x="{x + bar_w / 2:.1f}" y="{height - 8}" text-anchor="middle" fill="#8b949e" '
-            f'font-family="{font}" font-size="11">{label}</text>'
-        )
-    parts.append("</svg>")
-    return "\n".join(parts) + "\n"
-
-
-def dump_history(history):
-    return json.dumps(history, indent=2, sort_keys=True) + "\n"
-
-
 def leaks(text, banned):
-    lowered = text.replace("data/activity.svg", "").replace("data/feed-history.json", "").lower()
+    lowered = text.lower()
     allowed = {name.lower() for name in TECH_ORDER}
     for name in banned:
         if not name or len(name) < 4:
@@ -834,23 +672,6 @@ def leaks(text, banned):
         if re.search(rf"(?<![A-Za-z0-9]){re.escape(name)}(?![A-Za-z0-9])", lowered, re.IGNORECASE):
             return True
     return False
-
-
-def utc_today():
-    return datetime.now(timezone.utc).date()
-
-
-def week_start(day):
-    return day - timedelta(days=day.weekday())
-
-
-def window_start(today):
-    return week_start(today) - timedelta(weeks=WEEKS - 1)
-
-
-def recent_week_starts(today):
-    start = window_start(today)
-    return [(start + timedelta(weeks=offset)).isoformat() for offset in range(WEEKS)]
 
 
 def fetch(url, token):
