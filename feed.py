@@ -1,33 +1,105 @@
+import base64
 import json
 import os
+import re
+import urllib.error
+import urllib.parse
 import urllib.request
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 USER = "jtalborough"
 README = Path(__file__).with_name("README.md")
+HISTORY = Path(__file__).parent / "data" / "feed-history.json"
+CHART = Path(__file__).parent / "data" / "activity.svg"
 START = "<!-- FEED:START -->"
 END = "<!-- FEED:END -->"
 LIMIT = 8
 SKIP = {f"{USER}/{USER}"}
 API = "https://api.github.com"
+WEEKS = 12
+TECH_ORDER = (
+    "Ansible",
+    "k3s",
+    "Kubernetes",
+    "Helm",
+    "Docker",
+    "Fleet",
+    "GitHub Actions",
+    "Python",
+    "Flask",
+    "TypeScript",
+    "React",
+    "PostgreSQL",
+    "C#/.NET",
+)
+INFRA = {"Ansible", "k3s", "Kubernetes", "Helm", "Docker", "Fleet", "GitHub Actions"}
+APP = {"Python", "Flask", "TypeScript", "React", "PostgreSQL"}
+THEMES = {
+    "infra automation",
+    "application services",
+    "control software",
+    "automation and services",
+}
+DEPS = {
+    "flask": "Flask",
+    "psycopg": "PostgreSQL",
+    "psycopg2": "PostgreSQL",
+    "psycopg2-binary": "PostgreSQL",
+    "psycopg-binary": "PostgreSQL",
+    "asyncpg": "PostgreSQL",
+    "pg": "PostgreSQL",
+    "postgres": "PostgreSQL",
+    "postgresql": "PostgreSQL",
+    "npgsql": "PostgreSQL",
+    "react": "React",
+    "typescript": "TypeScript",
+}
+SAFE_LANGUAGE = re.compile(r"[A-Za-z0-9#+.\- ]{1,32}")
+TEMPLATE_WORDS = {
+    "private",
+    "work",
+    "last",
+    "days",
+    "commits",
+    "across",
+    "active",
+    "repos",
+    "languages",
+    "tech",
+    "mix",
+    "this",
+    "week",
+    "contributions",
+    "past",
+    "weeks",
+    "theme",
+    "over",
+    "the",
+}
 
 
 def main():
     text = README.read_text()
     if START not in text or END not in text or text.find(START) > text.find(END):
         raise SystemExit("feed markers missing")
-    updated = splice(text, collect())
+    body, files = collect_all()
+    updated = splice(text, body)
     if updated != text:
         README.write_text(updated)
+    for path, content in files.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.exists() or path.read_text() != content:
+            path.write_text(content)
 
 
-def collect():
-    source = os.environ.get("FEED_SOURCE", "github")
-    if source == "github":
-        lines = github_activity()
-    else:
-        raise SystemExit(f"unknown FEED_SOURCE: {source}")
-    return "\n".join(lines) if lines else "No recent public activity."
+def collect_all():
+    public = github_activity()
+    private_md, files = private_output()
+    body = "\n".join(public) if public else "No recent public activity."
+    if private_md:
+        body = f"{body}\n\n{private_md.strip()}"
+    return body, files
 
 
 def splice(text, body):
@@ -78,14 +150,14 @@ def format_event(event):
     kind = event["type"]
     repo = event["repo"]["name"]
     payload = event["payload"]
-    date = event["created_at"][:10]
+    date_label = event["created_at"][:10]
     name = repo.split("/", 1)[-1]
     if kind == "PushEvent":
         sha = payload.get("head") or ""
         subject = commit_subject(repo, sha) if sha else ""
         link = f"{repo_url(repo)}/commit/{sha}" if sha else repo_url(repo)
         detail = f" — {plain(subject)}" if subject else ""
-        return f"- Pushed to [{name}]({link}){detail} — {date}"
+        return f"- Pushed to [{name}]({link}){detail} — {date_label}"
     if kind == "PullRequestEvent":
         number = payload.get("number")
         pr = fetch_json(f"{API}/repos/{repo}/pulls/{number}")
@@ -102,7 +174,7 @@ def format_event(event):
         else:
             verb = action[:1].upper() + action[1:] if action else "Updated"
         url = pr.get("html_url") or f"{repo_url(repo)}/pull/{number}"
-        return f"- {verb} [{name}#{number}]({url}) — {title} — {date}"
+        return f"- {verb} [{name}#{number}]({url}) — {title} — {date_label}"
     if kind == "IssuesEvent":
         issue = payload.get("issue") or {}
         number = issue.get("number")
@@ -110,14 +182,14 @@ def format_event(event):
         action = payload.get("action") or "updated"
         verb = action[:1].upper() + action[1:]
         url = issue.get("html_url") or f"{repo_url(repo)}/issues/{number}"
-        return f"- {verb} [{name}#{number}]({url}) — {title} — {date}"
+        return f"- {verb} [{name}#{number}]({url}) — {title} — {date_label}"
     if kind == "ReleaseEvent":
         release = payload.get("release") or {}
         tag = plain(release.get("tag_name") or "release")
         url = release.get("html_url") or repo_url(repo)
-        return f"- Released [{name} {tag}]({url}) — {date}"
+        return f"- Released [{name} {tag}]({url}) — {date_label}"
     if kind == "CreateEvent":
-        return f"- Created [{name}]({repo_url(repo)}) — {date}"
+        return f"- Created [{name}]({repo_url(repo)}) — {date_label}"
     return None
 
 
@@ -136,17 +208,613 @@ def plain(text):
 
 
 def fetch_json(url):
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    data, _ = fetch(url, token)
+    return data
+
+
+def private_output():
+    token = os.environ.get("PRIVATE_FEED_TOKEN", "").strip()
+    if not token:
+        print("private section skipped")
+        return "", {}
+    try:
+        return build_private(token)
+    except Exception:
+        print("private section skipped")
+        return "", {}
+
+
+def build_private(token):
+    today = utc_today()
+    history = load_history(HISTORY)
+    snapshot, banned = scan_private(token, today)
+    counts = backfill_counts(token, today)
+    if counts is not None:
+        apply_weeks(history, counts)
+    snapshot = scrub_snapshot(snapshot, banned)
+    snapshot["theme"] = theme_for(snapshot["tech"])
+    upsert_snapshot(history, snapshot)
+    rows = week_rows(history, today)
+    markdown = render_private(latest_snapshot(history), rows)
+    svg = activity_svg([(row["week"], row["contributions"]) for row in rows])
+    blob = "\n".join((markdown, dump_history(history), svg))
+    if leaks(blob, banned):
+        raise RuntimeError("sanitizer")
+    return markdown, {HISTORY: dump_history(history), CHART: svg}
+
+
+def scan_private(token, today):
+    now = datetime.now(timezone.utc)
+    since_30 = (now - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    since_7 = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    commits_7 = commits_30 = repos_7 = repos_30 = 0
+    languages = {}
+    tech = set()
+    banned = set()
+    for repo in list_private_repos(token):
+        full_name = repo.get("full_name") or ""
+        owner = ((repo.get("owner") or {}).get("login")) or ""
+        name = repo.get("name") or ""
+        if full_name:
+            banned.add(full_name)
+        if name:
+            banned.add(name)
+        if owner and owner != USER:
+            banned.add(owner)
+        try:
+            got_7, got_30 = commit_counts(token, full_name, since_30, since_7)
+        except Exception:
+            continue
+        commits_7 += got_7
+        commits_30 += got_30
+        if got_7:
+            repos_7 += 1
+        if got_30:
+            repos_30 += 1
+        if got_30 <= 0:
+            continue
+        try:
+            for language, count in repo_languages(token, full_name).items():
+                languages[language] = languages.get(language, 0) + count
+            found, paths = repo_tech(token, repo)
+            tech.update(found)
+            banned.update(paths)
+        except Exception:
+            continue
+    if languages.get("Python"):
+        tech.add("Python")
+    if languages.get("TypeScript"):
+        tech.add("TypeScript")
+    if languages.get("C#"):
+        tech.add("C#/.NET")
+    snapshot = {
+        "date": today.isoformat(),
+        "week": week_start(today).isoformat(),
+        "commits_7d": commits_7,
+        "commits_30d": commits_30,
+        "repos_7d": repos_7,
+        "repos_30d": repos_30,
+        "languages": language_shares(languages),
+        "tech": ordered_tech(tech),
+        "theme": theme_for(tech),
+    }
+    return snapshot, banned
+
+
+def list_private_repos(token):
+    url = (
+        f"{API}/user/repos?visibility=private&per_page=100"
+        "&affiliation=owner,collaborator,organization_member"
+    )
+    repos = []
+    while url and len(repos) < 100:
+        page, url = fetch(url, token)
+        if not isinstance(page, list):
+            break
+        for repo in page:
+            if repo.get("private") and not repo.get("fork") and not repo.get("archived"):
+                repos.append(repo)
+    return repos
+
+
+def commit_counts(token, full_name, since_30, since_7):
+    quoted = urllib.parse.quote(full_name, safe="/")
+    since = urllib.parse.quote(since_30, safe="")
+    url = f"{API}/repos/{quoted}/commits?author={USER}&since={since}&per_page=100"
+    total_30 = 0
+    total_7 = 0
+    while url and total_30 < 400:
+        page, url = fetch(url, token)
+        if not isinstance(page, list):
+            break
+        for item in page:
+            total_30 += 1
+            authored = ((item.get("commit") or {}).get("author") or {}).get("date") or ""
+            if authored >= since_7:
+                total_7 += 1
+    return total_7, total_30
+
+
+def repo_languages(token, full_name):
+    quoted = urllib.parse.quote(full_name, safe="/")
+    data, _ = fetch(f"{API}/repos/{quoted}/languages", token)
+    if not isinstance(data, dict):
+        return {}
+    counts = {}
+    for name, count in data.items():
+        if SAFE_LANGUAGE.fullmatch(str(name)) and isinstance(count, int):
+            counts[str(name)] = count
+    return counts
+
+
+def repo_tech(token, repo):
+    full_name = repo.get("full_name") or ""
+    branch = repo.get("default_branch") or "main"
+    quoted = urllib.parse.quote(full_name, safe="/")
+    ref = urllib.parse.quote(branch, safe="")
+    data, _ = fetch(f"{API}/repos/{quoted}/git/trees/{ref}?recursive=1", token)
+    paths = []
+    if isinstance(data, dict):
+        for node in data.get("tree") or []:
+            path = node.get("path") or ""
+            if path and node.get("type") == "blob":
+                paths.append(path)
+    tech = tech_from_paths(paths)
+    manifests = [
+        path
+        for path in paths
+        if path.rsplit("/", 1)[-1].lower() in {"package.json", "pyproject.toml", "requirements.txt"}
+    ][:6]
+    for path in manifests:
+        try:
+            text = read_text(token, full_name, path, branch)
+        except Exception:
+            continue
+        tech.update(tech_from_manifest(text))
+        del text
+    if language_present(paths, (".py",)):
+        tech.add("Python")
+    if language_present(paths, (".ts", ".tsx")):
+        tech.add("TypeScript")
+    if language_present(paths, (".cs",)):
+        tech.add("C#/.NET")
+    return tech, paths
+
+
+def language_present(paths, suffixes):
+    return any(path.lower().endswith(suffixes) for path in paths)
+
+
+def tech_from_paths(paths):
+    found = set()
+    for path in paths:
+        lowered = path.lower()
+        name = lowered.rsplit("/", 1)[-1]
+        if (
+            name in {"ansible.cfg", "site.yml", "site.yaml", "playbook.yml", "playbook.yaml"}
+            or "/playbooks/" in f"/{lowered}"
+        ):
+            found.add("Ansible")
+        if name.startswith("k3s") or "/k3s/" in f"/{lowered}":
+            found.add("k3s")
+        if name in {"kustomization.yml", "kustomization.yaml", "chart.yaml"} or "/k8s/" in f"/{lowered}" or "/kubernetes/" in f"/{lowered}":
+            found.add("Kubernetes")
+        if name == "chart.yaml":
+            found.add("Helm")
+        if name == "dockerfile" or name.startswith("dockerfile.") or name in {"docker-compose.yml", "docker-compose.yaml"}:
+            found.add("Docker")
+        if name == "fleet.yaml":
+            found.add("Fleet")
+        if "/.github/workflows/" in f"/{lowered}" and name.endswith((".yml", ".yaml")):
+            found.add("GitHub Actions")
+        if name in {"pyproject.toml", "requirements.txt", "setup.py"}:
+            found.add("Python")
+        if name == "tsconfig.json":
+            found.add("TypeScript")
+        if name.endswith(".csproj") or name.endswith(".sln"):
+            found.add("C#/.NET")
+    return found
+
+
+def tech_from_manifest(text):
+    found = set()
+    lowered = text.lower()
+    for dep, tech in DEPS.items():
+        if re.search(rf"(?<![a-z0-9]){re.escape(dep)}(?![a-z0-9])", lowered):
+            found.add(tech)
+    return found
+
+
+def read_text(token, full_name, path, ref):
+    quoted = urllib.parse.quote(full_name, safe="/")
+    file_path = urllib.parse.quote(path, safe="/")
+    branch = urllib.parse.quote(ref, safe="")
+    data, _ = fetch(f"{API}/repos/{quoted}/contents/{file_path}?ref={branch}", token)
+    if not isinstance(data, dict) or data.get("encoding") != "base64":
+        return ""
+    raw = base64.b64decode(data.get("content") or "")
+    if len(raw) > 200_000:
+        return ""
+    return raw.decode("utf-8", errors="ignore")
+
+
+def ordered_tech(found):
+    return [name for name in TECH_ORDER if name in found]
+
+
+def theme_for(tech):
+    names = set(tech)
+    infra = bool(names & INFRA)
+    app = bool(names & APP)
+    dotnet = "C#/.NET" in names
+    if infra and (app or dotnet):
+        theme = "automation and services"
+    elif infra:
+        theme = "infra automation"
+    elif dotnet:
+        theme = "control software"
+    elif app:
+        theme = "application services"
+    else:
+        theme = ""
+    return theme if theme in THEMES else ""
+
+
+def language_shares(byte_counts):
+    total = sum(byte_counts.values())
+    if total <= 0:
+        return []
+    ranked = sorted(byte_counts.items(), key=lambda item: (-item[1], item[0]))
+    floors = []
+    used = 0
+    for name, count in ranked[:4]:
+        pct = int(count * 100 / total)
+        if pct <= 0:
+            continue
+        floors.append({"name": name, "pct": pct})
+        used += pct
+    if floors and used < 100 and len(ranked) <= 4:
+        floors[0]["pct"] += 100 - used
+    return floors
+
+
+def backfill_counts(token, today):
+    start = window_start(today)
+    start_at = datetime(start.year, start.month, start.day, tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    end_at = datetime(today.year, today.month, today.day, 23, 59, 59, tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    try:
+        private_days = contribution_days(token, viewer=True, start=start_at, end=end_at)
+        public_token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
+        public_days = contribution_days(public_token, viewer=False, start=start_at, end=end_at)
+    except Exception:
+        return None
+    if private_days is None or public_days is None:
+        return None
+    public = {day["date"]: int(day["contributionCount"]) for day in public_days}
+    totals = {}
+    for day in private_days:
+        day_name = day["date"]
+        count = max(0, int(day["contributionCount"]) - public.get(day_name, 0))
+        week = week_start(date.fromisoformat(day_name)).isoformat()
+        if week < start.isoformat():
+            continue
+        totals[week] = totals.get(week, 0) + count
+    for week in recent_week_starts(today):
+        totals.setdefault(week, 0)
+    return totals
+
+
+def contribution_days(token, viewer, start, end):
+    if viewer:
+        query = """
+        query($from: DateTime!, $to: DateTime!) {
+          viewer {
+            login
+            contributionsCollection(from: $from, to: $to) {
+              contributionCalendar { weeks { contributionDays { date contributionCount } } }
+            }
+          }
+        }
+        """
+        variables = {"from": start, "to": end}
+    else:
+        query = """
+        query($login: String!, $from: DateTime!, $to: DateTime!) {
+          user(login: $login) {
+            contributionsCollection(from: $from, to: $to) {
+              contributionCalendar { weeks { contributionDays { date contributionCount } } }
+            }
+          }
+        }
+        """
+        variables = {"login": USER, "from": start, "to": end}
+    payload = graphql(query, variables, token)
+    if not isinstance(payload, dict) or payload.get("errors"):
+        return None
+    root = (payload.get("data") or {}).get("viewer" if viewer else "user") or {}
+    if viewer and root.get("login") != USER:
+        return None
+    weeks = ((root.get("contributionsCollection") or {}).get("contributionCalendar") or {}).get("weeks") or []
+    days = []
+    for week in weeks:
+        for day in week.get("contributionDays") or []:
+            if day.get("date"):
+                days.append({"date": day["date"], "contributionCount": int(day.get("contributionCount") or 0)})
+    return days
+
+
+def graphql(query, variables, token):
+    body = json.dumps({"query": query, "variables": variables}).encode()
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "jtalborough-feed",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(f"{API}/graphql", data=body, headers=headers)
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.load(response)
+
+
+def load_history(path):
+    if not path.exists():
+        return {"snapshots": [], "weeks": []}
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return {"snapshots": [], "weeks": []}
+    if not isinstance(data, dict):
+        return {"snapshots": [], "weeks": []}
+    snapshots = []
+    for snap in data.get("snapshots") or []:
+        if isinstance(snap, dict) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(snap.get("date") or "")):
+            snapshots.append(normalize_snapshot(snap))
+    weeks = []
+    for row in data.get("weeks") or []:
+        if isinstance(row, dict) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("week") or "")):
+            weeks.append({"week": row["week"], "contributions": max(0, int(row.get("contributions") or 0))})
+    snapshots.sort(key=lambda snap: snap["date"])
+    weeks.sort(key=lambda row: row["week"])
+    return {"snapshots": snapshots, "weeks": weeks}
+
+
+def normalize_snapshot(snap):
+    tech = [name for name in TECH_ORDER if name in (snap.get("tech") or [])]
+    theme = snap.get("theme") if snap.get("theme") in THEMES else ""
+    languages = []
+    for item in snap.get("languages") or []:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        if not isinstance(name, str) or not SAFE_LANGUAGE.fullmatch(name):
+            continue
+        languages.append({"name": name, "pct": max(0, min(100, int(item.get("pct") or 0)))})
+    day = date.fromisoformat(snap["date"])
+    week = snap.get("week")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(week or "")):
+        week = week_start(day).isoformat()
+    return {
+        "commits_7d": max(0, int(snap.get("commits_7d") or 0)),
+        "commits_30d": max(0, int(snap.get("commits_30d") or 0)),
+        "date": snap["date"],
+        "languages": languages,
+        "repos_7d": max(0, int(snap.get("repos_7d") or 0)),
+        "repos_30d": max(0, int(snap.get("repos_30d") or 0)),
+        "tech": tech,
+        "theme": theme,
+        "week": week,
+    }
+
+
+def scrub_snapshot(snapshot, banned):
+    banned_lower = {name.lower() for name in banned if name}
+    snapshot["languages"] = [
+        item for item in snapshot["languages"] if item["name"].lower() not in banned_lower
+    ]
+    snapshot["tech"] = [name for name in snapshot["tech"] if name.lower() not in banned_lower]
+    if snapshot["theme"].lower() in banned_lower:
+        snapshot["theme"] = ""
+    return snapshot
+
+
+def upsert_snapshot(history, snapshot):
+    history["snapshots"] = [
+        item for item in history["snapshots"] if item.get("date") != snapshot["date"]
+    ]
+    history["snapshots"].append(normalize_snapshot(snapshot))
+    history["snapshots"].sort(key=lambda item: item["date"])
+
+
+def apply_weeks(history, counts):
+    by_week = {row["week"]: row for row in history["weeks"]}
+    for week, count in counts.items():
+        by_week[week] = {"week": week, "contributions": max(0, int(count))}
+    history["weeks"] = [by_week[key] for key in sorted(by_week)]
+
+
+def week_rows(history, today):
+    snaps = {}
+    for snap in history["snapshots"]:
+        current = snaps.get(snap["week"])
+        if current is None or snap["date"] >= current["date"]:
+            snaps[snap["week"]] = snap
+    contrib = {row["week"]: row["contributions"] for row in history["weeks"]}
+    return [
+        {"week": week, "contributions": contrib.get(week, 0), "snapshot": snaps.get(week)}
+        for week in recent_week_starts(today)
+    ]
+
+
+def latest_snapshot(history):
+    if not history["snapshots"]:
+        return None
+    return history["snapshots"][-1]
+
+
+def render_private(snapshot, rows):
+    lines = ["### Private work", ""]
+    if snapshot:
+        lines.append(
+            f"Last 7 days: {plural(snapshot['commits_7d'], 'commit')} across {plural(snapshot['repos_7d'], 'active private repo')}. "
+            f"Last 30 days: {plural(snapshot['commits_30d'], 'commit')} across {plural(snapshot['repos_30d'], 'active private repo')}."
+        )
+        language_line = format_languages(snapshot.get("languages") or [])
+        if language_line:
+            lines.extend(["", language_line])
+        if snapshot.get("tech"):
+            lines.extend(["", "Tech in the mix: " + ", ".join(snapshot["tech"]) + "."])
+        if snapshot.get("theme"):
+            lines.extend(["", f"This week: {snapshot['theme']}."])
+    if any(row["contributions"] for row in rows) or snapshot:
+        lines.extend(
+            [
+                "",
+                "![Private contributions over the last 12 weeks](data/activity.svg)",
+                "",
+                "<details>",
+                "<summary>Past weeks</summary>",
+                "",
+            ]
+        )
+        for row in reversed(rows):
+            lines.append(week_line(row))
+        lines.extend(["", "</details>"])
+    return "\n".join(lines)
+
+
+def week_line(row):
+    parts = [f"Week of {row['week']}: {plural(row['contributions'], 'contribution')}."]
+    snap = row.get("snapshot")
+    if snap:
+        parts.append(
+            f"As of {snap['date']}: {plural(snap['commits_7d'], 'commit')} across {plural(snap['repos_7d'], 'active private repo')} in the last 7 days, "
+            f"{plural(snap['commits_30d'], 'commit')} across {plural(snap['repos_30d'], 'active private repo')} in the last 30 days."
+        )
+        language_line = format_languages(snap.get("languages") or [])
+        if language_line:
+            parts.append(language_line)
+        if snap.get("tech"):
+            parts.append("Tech: " + ", ".join(snap["tech"]) + ".")
+        if snap.get("theme"):
+            parts.append(f"Theme: {snap['theme']}.")
+    return "- " + " ".join(parts)
+
+
+def plural(count, word):
+    return f"{count} {word}" if count == 1 else f"{count} {word}s"
+
+
+def format_languages(languages):
+    if not languages:
+        return ""
+    return "Languages: " + " · ".join(f"{item['name']} {item['pct']}%" for item in languages) + "."
+
+
+def activity_svg(series):
+    width = 720
+    height = 128
+    left, right, top, bottom = 36, 8, 18, 28
+    plot_w = width - left - right
+    plot_h = height - top - bottom
+    count = max(1, len(series))
+    gap = 8
+    bar_w = (plot_w - gap * (count - 1)) / count
+    peak = max([value for _, value in series] + [1])
+    font = "ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace"
+    desc = " ".join(f"Week of {week}: {plural(value, 'contribution')}." for week, value in series)
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" role="img">',
+        "<title>Private contributions over the last 12 weeks</title>",
+        f"<desc>{desc}</desc>",
+        f'<text x="0" y="12" fill="#8b949e" font-family="{font}" font-size="11">{peak}</text>',
+        f'<line x1="{left}" y1="{top + plot_h}" x2="{width - right}" y2="{top + plot_h}" stroke="#d0d7de"/>',
+    ]
+    for index, (week, value) in enumerate(series):
+        x = left + index * (bar_w + gap)
+        bar_h = 0 if value <= 0 else max(2, round(plot_h * value / peak))
+        y = top + plot_h - bar_h
+        label = f"{int(week[5:7])}/{int(week[8:10])}"
+        parts.append(
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" rx="2" fill="#3fb950">'
+            f"<title>Week of {week}: {plural(value, 'contribution')}</title></rect>"
+        )
+        parts.append(
+            f'<text x="{x + bar_w / 2:.1f}" y="{height - 8}" text-anchor="middle" fill="#8b949e" '
+            f'font-family="{font}" font-size="11">{label}</text>'
+        )
+    parts.append("</svg>")
+    return "\n".join(parts) + "\n"
+
+
+def dump_history(history):
+    return json.dumps(history, indent=2, sort_keys=True) + "\n"
+
+
+def leaks(text, banned):
+    lowered = text.replace("data/activity.svg", "").replace("data/feed-history.json", "").lower()
+    allowed = {name.lower() for name in TECH_ORDER} | {theme.lower() for theme in THEMES}
+    for name in banned:
+        if not name or len(name) < 4:
+            continue
+        if any(mark in name for mark in "/\\._-"):
+            if name.lower() in lowered:
+                return True
+            continue
+        if name.lower() in TEMPLATE_WORDS or name.lower() in allowed:
+            continue
+        if re.search(rf"(?<![A-Za-z0-9]){re.escape(name)}(?![A-Za-z0-9])", lowered, re.IGNORECASE):
+            return True
+    return False
+
+
+def utc_today():
+    return datetime.now(timezone.utc).date()
+
+
+def week_start(day):
+    return day - timedelta(days=day.weekday())
+
+
+def window_start(today):
+    return week_start(today) - timedelta(weeks=WEEKS - 1)
+
+
+def recent_week_starts(today):
+    start = window_start(today)
+    return [(start + timedelta(weeks=offset)).isoformat() for offset in range(WEEKS)]
+
+
+def fetch(url, token):
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "jtalborough-feed",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            link = response.headers.get("Link", "")
+            payload = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code in {404, 409}:
+            return {}, None
+        raise
+    return payload, next_link(link)
+
+
+def next_link(header):
+    if not header:
+        return None
+    for part in header.split(","):
+        if 'rel="next"' in part:
+            match = re.search(r"<([^>]+)>", part)
+            if match:
+                return match.group(1)
+    return None
 
 
 if __name__ == "__main__":
