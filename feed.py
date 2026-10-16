@@ -94,6 +94,9 @@ def main():
 
 
 def collect_all():
+    source = os.environ.get("FEED_SOURCE", "github")
+    if source != "github":
+        raise SystemExit(f"unknown FEED_SOURCE: {source}")
     public = github_activity()
     private_md, files = private_output()
     body = "\n".join(public) if public else "No recent public activity."
@@ -234,14 +237,20 @@ def build_private(token):
         apply_weeks(history, counts)
     snapshot = scrub_snapshot(snapshot, banned)
     snapshot["theme"] = theme_for(snapshot["tech"])
+    if snapshot["theme"].lower() in {name.lower() for name in banned if name}:
+        snapshot["theme"] = ""
     upsert_snapshot(history, snapshot)
     rows = week_rows(history, today)
     markdown = render_private(latest_snapshot(history), rows)
-    svg = activity_svg([(row["week"], row["contributions"]) for row in rows])
+    files = {HISTORY: dump_history(history)}
+    svg = ""
+    if series_complete(rows):
+        svg = activity_svg([(row["week"], row["contributions"]) for row in rows])
+        files[CHART] = svg
     blob = "\n".join((markdown, dump_history(history), svg))
     if leaks(blob, banned):
         raise RuntimeError("sanitizer")
-    return markdown, {HISTORY: dump_history(history), CHART: svg}
+    return markdown, files
 
 
 def scan_private(token, today):
@@ -487,14 +496,33 @@ def backfill_counts(token, today):
         private_days = contribution_days(token, viewer=True, start=start_at, end=end_at)
         public_token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
         public_days = contribution_days(public_token, viewer=False, start=start_at, end=end_at)
+        if not calendar_covers(private_days, today) or not calendar_covers(public_days, today):
+            return None
+        return weekly_private_counts(private_days, public_days, today)
     except Exception:
         return None
-    if private_days is None or public_days is None:
-        return None
+
+
+def calendar_covers(days, today):
+    if not days:
+        return False
+    found = set()
+    for day in days:
+        try:
+            found.add(week_start(date.fromisoformat(day["date"])).isoformat())
+        except (TypeError, ValueError):
+            continue
+    return all(week in found for week in recent_week_starts(today))
+
+
+def weekly_private_counts(private_days, public_days, today):
+    start = window_start(today)
     public = {day["date"]: int(day["contributionCount"]) for day in public_days}
     totals = {}
     for day in private_days:
         day_name = day["date"]
+        if day_name > today.isoformat():
+            continue
         count = max(0, int(day["contributionCount"]) - public.get(day_name, 0))
         week = week_start(date.fromisoformat(day_name)).isoformat()
         if week < start.isoformat():
@@ -563,18 +591,26 @@ def load_history(path):
         return {"snapshots": [], "weeks": []}
     try:
         data = json.loads(path.read_text())
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, OSError):
         return {"snapshots": [], "weeks": []}
     if not isinstance(data, dict):
         return {"snapshots": [], "weeks": []}
     snapshots = []
     for snap in data.get("snapshots") or []:
-        if isinstance(snap, dict) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(snap.get("date") or "")):
+        if not isinstance(snap, dict) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(snap.get("date") or "")):
+            continue
+        try:
             snapshots.append(normalize_snapshot(snap))
+        except (TypeError, ValueError):
+            continue
     weeks = []
     for row in data.get("weeks") or []:
-        if isinstance(row, dict) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("week") or "")):
+        if not isinstance(row, dict) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("week") or "")):
+            continue
+        try:
             weeks.append({"week": row["week"], "contributions": max(0, int(row.get("contributions") or 0))})
+        except (TypeError, ValueError):
+            continue
     snapshots.sort(key=lambda snap: snap["date"])
     weeks.sort(key=lambda row: row["week"])
     return {"snapshots": snapshots, "weeks": weeks}
@@ -642,9 +678,17 @@ def week_rows(history, today):
             snaps[snap["week"]] = snap
     contrib = {row["week"]: row["contributions"] for row in history["weeks"]}
     return [
-        {"week": week, "contributions": contrib.get(week, 0), "snapshot": snaps.get(week)}
+        {
+            "week": week,
+            "contributions": contrib[week] if week in contrib else None,
+            "snapshot": snaps.get(week),
+        }
         for week in recent_week_starts(today)
     ]
+
+
+def series_complete(rows):
+    return all(row["contributions"] is not None for row in rows)
 
 
 def latest_snapshot(history):
@@ -667,26 +711,24 @@ def render_private(snapshot, rows):
             lines.extend(["", "Tech in the mix: " + ", ".join(snapshot["tech"]) + "."])
         if snapshot.get("theme"):
             lines.extend(["", f"This week: {snapshot['theme']}."])
-    if any(row["contributions"] for row in rows) or snapshot:
-        lines.extend(
-            [
-                "",
-                "![Private contributions over the last 12 weeks](data/activity.svg)",
-                "",
-                "<details>",
-                "<summary>Past weeks</summary>",
-                "",
-            ]
-        )
-        for row in reversed(rows):
-            lines.append(week_line(row))
+    if series_complete(rows):
+        lines.extend(["", "![Private contributions over the last 12 weeks](data/activity.svg)"])
+    week_lines = [line for row in reversed(rows) if (line := week_line(row))]
+    if week_lines:
+        lines.extend(["", "<details>", "<summary>Past weeks</summary>", ""])
+        lines.extend(week_lines)
         lines.extend(["", "</details>"])
     return "\n".join(lines)
 
 
 def week_line(row):
-    parts = [f"Week of {row['week']}: {plural(row['contributions'], 'contribution')}."]
     snap = row.get("snapshot")
+    known = row["contributions"] is not None
+    if not known and not snap:
+        return ""
+    parts = [f"Week of {row['week']}:"]
+    if known:
+        parts.append(f"{plural(row['contributions'], 'contribution')}.")
     if snap:
         parts.append(
             f"As of {snap['date']}: {plural(snap['commits_7d'], 'commit')} across {plural(snap['repos_7d'], 'active private repo')} in the last 7 days, "
@@ -754,7 +796,7 @@ def dump_history(history):
 
 def leaks(text, banned):
     lowered = text.replace("data/activity.svg", "").replace("data/feed-history.json", "").lower()
-    allowed = {name.lower() for name in TECH_ORDER} | {theme.lower() for theme in THEMES}
+    allowed = {name.lower() for name in TECH_ORDER}
     for name in banned:
         if not name or len(name) < 4:
             continue
