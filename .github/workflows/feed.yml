@@ -20,7 +20,7 @@ jobs:
           FEED_SOURCE: github
       - run: |
           git add README.md
-          if [ -d data ]; then git add data; fi
+          if git ls-files --deleted -- data | grep -q .; then git add -A -- data; fi
           git diff --cached --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
