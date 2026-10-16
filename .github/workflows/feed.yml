@@ -16,11 +16,13 @@ jobs:
       - run: python3 feed.py
         env:
           GH_TOKEN: ${{ github.token }}
+          PRIVATE_FEED_TOKEN: ${{ secrets.PRIVATE_FEED_TOKEN }}
           FEED_SOURCE: github
       - run: |
-          git diff --quiet README.md && exit 0
+          git add README.md
+          if [ -d data ]; then git add data; fi
+          git diff --cached --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
           git commit -m "Update activity feed"
           git push
