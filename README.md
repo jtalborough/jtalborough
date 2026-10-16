@@ -25,6 +25,14 @@
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/afb242fa0474ef75f3b534bcbee908b29de21491) — Add real UI screenshots from a demo run; move concept art into a collapsed section — 2026-10-11
 - Updated [lobehub#15347](https://github.com/lobehub/lobehub/pull/15347) — 🐛 fix(desktop): detect gemini-cli when `--version` is a bare number — 2026-10-10
 - Updated [codex#43057](https://github.com/openai/codex/issues/43057) — Codex desktop: pending question interface disappears after switching tabs and does not return — 2026-09-23
+
+### Private work
+
+Last 30 days: 593 commits across 12 active private repos.
+
+Languages: Python 47% · TypeScript 22% · Go 15% · HTML 4% · JavaScript 2% · Shell 2% · PLpgSQL 1%.
+
+Tech in the mix: GitHub Actions, Python, Docker, TypeScript, React, PostgreSQL, k3s, Kubernetes, C#/.NET, Ansible.
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
