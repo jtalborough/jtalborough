@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 268" width="760" role="img">
+  <title>I make software move things.</title>
+  <defs>
+    <clipPath id="win">
+      <rect width="760" height="268" rx="12"/>
+    </clipPath>
+    <clipPath id="cmd"><rect x="32" y="62" width="696" height="26"><animate attributeName="width" from="0" to="696" begin="0.2s" dur="0.45s" fill="freeze"/></rect></clipPath>
+    <clipPath id="tag"><rect x="32" y="102" width="696" height="40"><animate attributeName="width" from="0" to="696" begin="0.75s" dur="1.15s" fill="freeze"/></rect></clipPath>
+    <clipPath id="sub"><rect x="32" y="154" width="696" height="26"><animate attributeName="width" from="0" to="696" begin="2s" dur="1.05s" fill="freeze"/></rect></clipPath>
+  </defs>
+  <g clip-path="url(#win)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace">
+    <rect width="760" height="268" fill="#0d1117"/>
+    <rect width="760" height="44" fill="#161b22"/>
+    <line x1="0" y1="44" x2="760" y2="44" stroke="#30363d"/>
+    <circle cx="24" cy="22" r="6" fill="#ff5f57"/>
+    <circle cx="44" cy="22" r="6" fill="#febc2e"/>
+    <circle cx="64" cy="22" r="6" fill="#28c840"/>
+    <text x="380" y="27" fill="#8b949e" font-size="13" text-anchor="middle">jason@designbuildautomate: ~</text>
+    <text x="36" y="84" fill="#3fb950" font-size="16" clip-path="url(#cmd)">$</text>
+    <text x="56" y="84" fill="#e6edf3" font-size="16" clip-path="url(#cmd)">cat tagline</text>
+    <text x="36" y="136" fill="#f0f6fc" font-size="28" font-weight="700" clip-path="url(#tag)">I make software move things.</text>
+    <text x="36" y="174" fill="#8b949e" font-size="15" clip-path="url(#sub)">Hardware integration | Automation | Software engineering</text>
+    <text x="36" y="224" fill="#3fb950" font-size="16">$</text>
+    <rect x="56" y="210" width="10" height="18" rx="1" fill="#3fb950">
+      <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.45;0.5;1" dur="1.15s" begin="3.1s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <rect width="759" height="267" x="0.5" y="0.5" rx="12" fill="none" stroke="#30363d"/>
+</svg>
