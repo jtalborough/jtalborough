@@ -20,7 +20,6 @@
 <!-- FEED:START -->
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
-- Pushed to [magpie](https://github.com/jtalborough/magpie/commit/9efcb997a1435cd0d697f5349bdee3a3229d6870) — Restore deploy and publish workflows, hardened for a public repo — 2026-10-11
 
 ### Private work
 
@@ -32,23 +31,23 @@ Tech in the mix: k3s, Kubernetes, Docker, GitHub Actions, Python, TypeScript, Re
 
 This week: automation and services.
 
-![Private contributions over the last 12 weeks](data/activity.svg)
+![Private commits over the last 12 weeks](data/activity.svg)
 
 <details>
 <summary>Past weeks</summary>
 
-- Week of 2026-10-12: 0 contributions. As of 2026-10-16: 189 commits across 7 active private repos in the last 7 days, 593 commits across 12 active private repos in the last 30 days. Languages: Python 51% · TypeScript 36% · Shell 5% · Kotlin 2%. Tech: k3s, Kubernetes, Docker, GitHub Actions, Python, TypeScript, React, PostgreSQL. Theme: automation and services.
-- Week of 2026-10-05: 0 contributions.
-- Week of 2026-09-28: 0 contributions.
-- Week of 2026-09-21: 0 contributions.
-- Week of 2026-09-14: 0 contributions.
-- Week of 2026-09-07: 0 contributions.
-- Week of 2026-08-31: 1 contribution.
-- Week of 2026-08-24: 0 contributions.
-- Week of 2026-08-17: 0 contributions.
-- Week of 2026-08-10: 0 contributions.
-- Week of 2026-08-03: 0 contributions.
-- Week of 2026-07-27: 0 contributions.
+- Week of 2026-10-12: 154 commits.
+- Week of 2026-10-05: 72 commits.
+- Week of 2026-09-28: 119 commits.
+- Week of 2026-09-21: 179 commits.
+- Week of 2026-09-14: 85 commits.
+- Week of 2026-09-07: 67 commits.
+- Week of 2026-08-31: 185 commits.
+- Week of 2026-08-24: 94 commits.
+- Week of 2026-08-17: 70 commits.
+- Week of 2026-08-10: 153 commits.
+- Week of 2026-08-03: 124 commits.
+- Week of 2026-07-27: 840 commits.
 
 </details>
 <!-- FEED:END -->

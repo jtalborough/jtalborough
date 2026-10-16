@@ -40,51 +40,51 @@
   ],
   "weeks": [
     {
-      "contributions": 0,
+      "commits": 840,
       "week": "2026-07-27"
     },
     {
-      "contributions": 0,
+      "commits": 124,
       "week": "2026-08-03"
     },
     {
-      "contributions": 0,
+      "commits": 153,
       "week": "2026-08-10"
     },
     {
-      "contributions": 0,
+      "commits": 70,
       "week": "2026-08-17"
     },
     {
-      "contributions": 0,
+      "commits": 94,
       "week": "2026-08-24"
     },
     {
-      "contributions": 1,
+      "commits": 185,
       "week": "2026-08-31"
     },
     {
-      "contributions": 0,
+      "commits": 67,
       "week": "2026-09-07"
     },
     {
-      "contributions": 0,
+      "commits": 85,
       "week": "2026-09-14"
     },
     {
-      "contributions": 0,
+      "commits": 179,
       "week": "2026-09-21"
     },
     {
-      "contributions": 0,
+      "commits": 119,
       "week": "2026-09-28"
     },
     {
-      "contributions": 0,
+      "commits": 72,
       "week": "2026-10-05"
     },
     {
-      "contributions": 0,
+      "commits": 154,
       "week": "2026-10-12"
     }
   ]
