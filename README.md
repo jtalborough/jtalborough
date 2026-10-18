@@ -19,6 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Updated [paseo#1295](https://github.com/getpaseo/paseo/issues/1295) — Editable files + WYSIWYG markdown editing in the file viewer — 2026-10-17
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/5d7c00ecc4f2aa28818307141b6a4283681b24ab) — Add real UI screenshots from a simulator demo run — 2026-10-11
@@ -28,7 +29,7 @@
 
 ### Private work
 
-Last 30 days: 596 commits across 12 active private repos.
+Last 30 days: 618 commits across 13 active private repos.
 
 Languages: Python 47% · TypeScript 22% · Go 15% · HTML 4% · JavaScript 2% · Shell 2% · PLpgSQL 1%.
 
