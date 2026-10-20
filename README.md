@@ -29,11 +29,11 @@
 
 ### Private work
 
-Last 30 days: 613 commits across 12 active private repos.
+Last 30 days: 614 commits across 14 active private repos.
 
 Languages: Python 47% · TypeScript 22% · Go 15% · HTML 4% · JavaScript 2% · Shell 2% · PLpgSQL 1%.
 
-Tech in the mix: GitHub Actions, Python, Docker, TypeScript, React, PostgreSQL, k3s, Kubernetes, C#/.NET, Ansible.
+Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, k3s, Kubernetes, C#/.NET, Ansible.
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
