@@ -19,6 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/02f4d9c93135f8387ff76f111f12d4a96cca43ec) — Update feed (2026-10-21 07:14) — 2026-10-21
 - Updated [paseo#1295](https://github.com/getpaseo/paseo/issues/1295) — Editable files + WYSIWYG markdown editing in the file viewer — 2026-10-17
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
@@ -29,9 +30,9 @@
 
 ### Private work
 
-Last 30 days: 614 commits across 14 active private repos.
+Last 30 days: 559 commits across 13 active private repos.
 
-Languages: Python 47% · TypeScript 22% · Go 15% · HTML 4% · JavaScript 2% · Shell 2% · PLpgSQL 1%.
+Languages: Python 46% · TypeScript 23% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
 Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, k3s, Kubernetes, C#/.NET, Ansible.
 <!-- FEED:END -->
