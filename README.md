@@ -19,7 +19,8 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/02f4d9c93135f8387ff76f111f12d4a96cca43ec) — Update feed (2026-10-21 07:14) — 2026-10-21
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/b166787898c453d1e3238f80d8d7ed51603ed459) — Update feed (2026-10-22 05:10) — 2026-10-22
+- Closed [epi-videoCodec-ciscoExtended#28](https://github.com/PepperDash/epi-videoCodec-ciscoExtended/issues/28) — [BUG)-When EPI initializes while Codec is in a call the Active call. is not recognized and cannot be hung up. — 2026-10-21
 - Updated [paseo#1295](https://github.com/getpaseo/paseo/issues/1295) — Editable files + WYSIWYG markdown editing in the file viewer — 2026-10-17
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
@@ -30,11 +31,11 @@
 
 ### Private work
 
-Last 30 days: 559 commits across 13 active private repos.
+Last 30 days: 262 commits across 11 active private repos.
 
-Languages: Python 46% · TypeScript 23% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
+Languages: Python 46% · TypeScript 21% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
-Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, k3s, Kubernetes, C#/.NET, Ansible.
+Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
