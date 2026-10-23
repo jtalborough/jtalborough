@@ -27,11 +27,10 @@
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/5d7c00ecc4f2aa28818307141b6a4283681b24ab) — Add real UI screenshots from a simulator demo run — 2026-10-11
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/afb242fa0474ef75f3b534bcbee908b29de21491) — Add real UI screenshots from a demo run; move concept art into a collapsed section — 2026-10-11
 - Updated [lobehub#15347](https://github.com/lobehub/lobehub/pull/15347) — 🐛 fix(desktop): detect gemini-cli when `--version` is a bare number — 2026-10-10
-- Updated [codex#43057](https://github.com/openai/codex/issues/43057) — Codex desktop: pending question interface disappears after switching tabs and does not return — 2026-09-23
 
 ### Private work
 
-Last 30 days: 262 commits across 11 active private repos.
+Last 30 days: 263 commits across 11 active private repos.
 
 Languages: Python 46% · TypeScript 21% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
