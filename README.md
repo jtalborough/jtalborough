@@ -19,18 +19,21 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/b166787898c453d1e3238f80d8d7ed51603ed459) — Update feed (2026-10-22 05:10) — 2026-10-22
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/942d96a339c384d9a69b20d2f45c50909c8f9ced) — Market charts 2026-10-25 — 2026-10-25
+- Opened [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-24
+- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/5387e06d1a5866f7845ba0bc2099fbc079bc8b7c) — Make public maillard canonical: production AI auto, drum auto-apply, auto cooling fans, disconnect fallback (#4) — 2026-10-24
+- Merged [maillard#4](https://github.com/jtalborough/maillard/pull/4) — Make public maillard canonical: AI auto, drum auto-apply, auto cooling fans — 2026-10-24
+- Closed [maillard#3](https://github.com/jtalborough/maillard/pull/3) — Canonical maillard: AI AUTO roast + deploy from public repo — 2026-10-24
 - Closed [epi-videoCodec-ciscoExtended#28](https://github.com/PepperDash/epi-videoCodec-ciscoExtended/issues/28) — [BUG)-When EPI initializes while Codec is in a call the Active call. is not recognized and cannot be hung up. — 2026-10-21
 - Updated [paseo#1295](https://github.com/getpaseo/paseo/issues/1295) — Editable files + WYSIWYG markdown editing in the file viewer — 2026-10-17
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
-- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/5d7c00ecc4f2aa28818307141b6a4283681b24ab) — Add real UI screenshots from a simulator demo run — 2026-10-11
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/afb242fa0474ef75f3b534bcbee908b29de21491) — Add real UI screenshots from a demo run; move concept art into a collapsed section — 2026-10-11
 - Updated [lobehub#15347](https://github.com/lobehub/lobehub/pull/15347) — 🐛 fix(desktop): detect gemini-cli when `--version` is a bare number — 2026-10-10
 
 ### Private work
 
-Last 30 days: 266 commits across 11 active private repos.
+Last 30 days: 271 commits across 11 active private repos.
 
 Languages: Python 46% · TypeScript 21% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
