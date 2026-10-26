@@ -19,9 +19,10 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/942d96a339c384d9a69b20d2f45c50909c8f9ced) — Market charts 2026-10-25 — 2026-10-25
-- Opened [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-24
-- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/5387e06d1a5866f7845ba0bc2099fbc079bc8b7c) — Make public maillard canonical: production AI auto, drum auto-apply, auto cooling fans, disconnect fallback (#4) — 2026-10-24
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/e5bb29c617141a9df0c293dcc1d7c396897788a9) — Update feed (2026-10-26 05:01) — 2026-10-26
+- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/c52b1c880efb9a576e53ed49432ffbd1ca73633c) — Refresh README screenshots for the current dashboard (#5) — 2026-10-25
+- Merged [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-25
+- Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
 - Merged [maillard#4](https://github.com/jtalborough/maillard/pull/4) — Make public maillard canonical: AI auto, drum auto-apply, auto cooling fans — 2026-10-24
 - Closed [maillard#3](https://github.com/jtalborough/maillard/pull/3) — Canonical maillard: AI AUTO roast + deploy from public repo — 2026-10-24
 - Closed [epi-videoCodec-ciscoExtended#28](https://github.com/PepperDash/epi-videoCodec-ciscoExtended/issues/28) — [BUG)-When EPI initializes while Codec is in a call the Active call. is not recognized and cannot be hung up. — 2026-10-21
@@ -33,9 +34,9 @@
 
 ### Private work
 
-Last 30 days: 271 commits across 11 active private repos.
+Last 30 days: 263 commits across 11 active private repos.
 
-Languages: Python 46% · TypeScript 21% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
+Languages: Python 47% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
 Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
