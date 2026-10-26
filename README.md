@@ -44,3 +44,5 @@ Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
 
 Connect with me about hardware integration, robotics, and automation.
+
+![](https://hit.yhype.me/github/profile?account_id=3274657)
