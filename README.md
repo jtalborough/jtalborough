@@ -19,7 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/e5bb29c617141a9df0c293dcc1d7c396897788a9) — Update feed (2026-10-26 05:01) — 2026-10-26
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/ac6555272632b7a3b51583da91a4028e6362548f) — Update feed (2026-10-27 05:08) — 2026-10-27
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/c52b1c880efb9a576e53ed49432ffbd1ca73633c) — Refresh README screenshots for the current dashboard (#5) — 2026-10-25
 - Merged [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-25
 - Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
@@ -34,7 +34,7 @@
 
 ### Private work
 
-Last 30 days: 263 commits across 11 active private repos.
+Last 30 days: 264 commits across 11 active private repos.
 
 Languages: Python 47% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
