@@ -19,12 +19,14 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/dad26363793242e4c6b78eff3712fc8ddb6a5e07) — Update feed (2026-10-28 05:06) — 2026-10-28
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/2e074c091694806ac98f8beb146732fb58f5da6e) — Update feed (2026-10-29 04:59) — 2026-10-29
+- Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
+- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/b3f07bf75ddde1229b58c018fc6c7afe97721817) — Print each bag's entered net weight on the label. (#7) — 2026-10-28
+- Merged [maillard#7](https://github.com/jtalborough/maillard/pull/7) — Print each bag's entered net weight — 2026-10-28
 - Updated [epi-utilities-devicemonitor#15](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/15) — Development — 2026-10-27
 - Updated [epi-utilities-devicemonitor#10](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/10) — fix: issue where join were +1 when linking config in sharp devices — 2026-10-27
 - Updated [epi-utilities-devicemonitor#9](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/9) — Add new workflows — 2026-10-27
 - Updated [epi-utilities-devicemonitor#4](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/4) — Create betabuilds.yml — 2026-10-27
-- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/c52b1c880efb9a576e53ed49432ffbd1ca73633c) — Refresh README screenshots for the current dashboard (#5) — 2026-10-25
 - Merged [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-25
 - Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
 - Merged [maillard#4](https://github.com/jtalborough/maillard/pull/4) — Make public maillard canonical: AI auto, drum auto-apply, auto cooling fans — 2026-10-24
@@ -38,9 +40,9 @@
 
 ### Private work
 
-Last 30 days: 270 commits across 11 active private repos.
+Last 30 days: 275 commits across 11 active private repos.
 
-Languages: Python 47% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
+Languages: Python 48% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
 Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
