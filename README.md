@@ -19,9 +19,9 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/fc8320d374ff16d6116a9102a407117c3ed7dd3c) — Update feed (2026-10-31 04:59) — 2026-10-31
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/e3694677064946311f6cd30a522aa82e8db36e62) — Update feed (2026-10-30 05:04) — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
 - Merged [maillard#7](https://github.com/jtalborough/maillard/pull/7) — Print each bag's entered net weight — 2026-10-28
 - Updated [epi-utilities-devicemonitor#15](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/15) — Development — 2026-10-27
@@ -41,7 +41,7 @@
 
 ### Private work
 
-Last 30 days: 278 commits across 11 active private repos.
+Last 30 days: 281 commits across 11 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
