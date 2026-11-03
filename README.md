@@ -41,7 +41,7 @@
 
 ### Private work
 
-Last 30 days: 251 commits across 10 active private repos.
+Last 30 days: 234 commits across 8 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
