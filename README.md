@@ -41,9 +41,9 @@
 
 ### Private work
 
-Last 30 days: 234 commits across 8 active private repos.
+Last 30 days: 237 commits across 12 active private repos.
 
-Languages: Python 48% · TypeScript 20% · Go 17% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
+Languages: Python 48% · TypeScript 20% · Go 16% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
 Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
