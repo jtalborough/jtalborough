@@ -19,7 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/8a2be8bdaa2ac6b177dab3b7b26b8e41dd111509) — Market charts 2026-11-05 — 2026-11-05
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/ec820493b46b61d425dfe850967aede12417689a) — Market charts 2026-11-06 — 2026-11-06
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
@@ -41,7 +41,7 @@
 
 ### Private work
 
-Last 30 days: 245 commits across 13 active private repos.
+Last 30 days: 246 commits across 13 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 5% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
