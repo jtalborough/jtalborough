@@ -19,9 +19,9 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/912c042e3e79b4071b03008f3fe08d96970b4573) — Market charts 2026-11-08 — 2026-11-08
-- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/2438749029ecaa5ef2761777ee52ac43a97045da) — Market charts 2026-11-09 — 2026-11-09
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
+- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
 - Merged [maillard#7](https://github.com/jtalborough/maillard/pull/7) — Print each bag's entered net weight — 2026-10-28
 - Updated [epi-utilities-devicemonitor#15](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/15) — Development — 2026-10-27
@@ -37,11 +37,10 @@
 - Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
 - Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/afb242fa0474ef75f3b534bcbee908b29de21491) — Add real UI screenshots from a demo run; move concept art into a collapsed section — 2026-10-11
-- Updated [lobehub#15347](https://github.com/lobehub/lobehub/pull/15347) — 🐛 fix(desktop): detect gemini-cli when `--version` is a bare number — 2026-10-10
 
 ### Private work
 
-Last 30 days: 246 commits across 14 active private repos.
+Last 30 days: 218 commits across 13 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
