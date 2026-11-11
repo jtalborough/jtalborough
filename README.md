@@ -19,11 +19,20 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/6f6d177a02898f580f3858e8951cf45ab244b47d) — Market charts 2026-11-11 — 2026-11-11
+- Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
+- Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
+- Opened [omnigent#9](https://github.com/jtalborough/omnigent/pull/9) — fix: make Hermes per-turn subprocess timeout configurable — 2026-11-11
+- Opened [omnigent#7](https://github.com/jtalborough/omnigent/issues/7) — github_scope allows destructive gh api DELETE of git refs when allow_destructive is off — 2026-11-10
+- Merged [omnigent#8](https://github.com/jtalborough/omnigent/pull/8) — fix: apply allow_destructive to gh api DELETE of git refs — 2026-11-10
+- Merged [magpie#1](https://github.com/jtalborough/magpie/pull/1) — Builder setup: AGENTS.md, magpie-builder definition, test CI — 2026-11-10
+- Merged [omnigent#1](https://github.com/jtalborough/omnigent/pull/1) — Builder setup: fork rules and omnigent-builder definition — 2026-11-10
+- Pushed to [omnigent](https://github.com/jtalborough/omnigent/commit/c966679e462e608187542eaa4abadba775509da1) — fix: apply allow_destructive to gh api DELETE of git refs — 2026-11-10
+- Closed [omnigent#3](https://github.com/jtalborough/omnigent/issues/3) — Hermes pre_tool_call plugin callback times out at 30s, so Omnigent policy ASKs fail closed before a human can answer — 2026-11-10
+- Merged [omnigent#6](https://github.com/jtalborough/omnigent/pull/6) — fix: cap Hermes policy hook long-poll under the 30s plugin timeout — 2026-11-10
+- Closed [omnigent#4](https://github.com/jtalborough/omnigent/issues/4) — github_scope write_branches is literal names only, so feature-branch prefixes like rai/* cannot be allowed — 2026-11-10
+- Merged [omnigent#5](https://github.com/jtalborough/omnigent/pull/5) — github_scope write_branches globs and zygote harness sys.argv — 2026-11-10
 - Opened [omnigent#2](https://github.com/jtalborough/omnigent/issues/2) — Hermes zygote fork drops --conversation-id from sys.argv, so policy hooks and Omnigent MCP tools never load — 2026-11-10
-- Opened [omnigent#3](https://github.com/jtalborough/omnigent/issues/3) — Hermes pre_tool_call plugin callback times out at 30s, so Omnigent policy ASKs fail closed before a human can answer — 2026-11-10
-- Reopened [omnigent#1](https://github.com/jtalborough/omnigent/pull/1) — Builder setup: fork rules and omnigent-builder definition — 2026-11-10
-- Opened [magpie#1](https://github.com/jtalborough/magpie/pull/1) — Builder setup: AGENTS.md, magpie-builder definition, test CI — 2026-11-10
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/ebd295f9e9458f1e103bd1dda0af5f499d1bdaa6) — Market charts 2026-11-10 — 2026-11-10
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
@@ -43,7 +52,7 @@
 
 ### Private work
 
-Last 30 days: 245 commits across 14 active private repos.
+Last 30 days: 250 commits across 14 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
