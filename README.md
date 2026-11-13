@@ -19,7 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/4f12bdfdffb359123c31abeb0b64bc13d9e0f366) — Market charts 2026-11-12 — 2026-11-12
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/c19a42adcb4a3b06fecd3a0e52430fb63e06e0ef) — Market charts 2026-11-13 — 2026-11-13
 - Opened [magpie#3](https://github.com/jtalborough/magpie/pull/3) — jco: builder templates magpie-code and magpie-cabinet — 2026-11-11
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
 - Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
@@ -53,7 +53,7 @@
 
 ### Private work
 
-Last 30 days: 250 commits across 14 active private repos.
+Last 30 days: 211 commits across 15 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
