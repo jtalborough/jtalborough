@@ -19,7 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
-- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/c19a42adcb4a3b06fecd3a0e52430fb63e06e0ef) — Market charts 2026-11-13 — 2026-11-13
+- Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/7d4195999ceffb65d82fe5084d62f2e357792218) — Update feed (2026-11-14 05:10) — 2026-11-14
 - Opened [magpie#3](https://github.com/jtalborough/magpie/pull/3) — jco: builder templates magpie-code and magpie-cabinet — 2026-11-11
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
 - Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
@@ -53,11 +53,11 @@
 
 ### Private work
 
-Last 30 days: 211 commits across 15 active private repos.
+Last 30 days: 216 commits across 15 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
-Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
+Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, Kubernetes, PostgreSQL, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
