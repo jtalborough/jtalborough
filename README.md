@@ -19,6 +19,12 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Updated [orca#6902](https://github.com/stablyai/orca/pull/6902) — feat(sidebar): add "Open as folder" to nested-repo import — 2026-11-15
+- Updated [orca#6898](https://github.com/stablyai/orca/pull/6898) — feat(sidebar): show project name on worktree rows in header-less views — 2026-11-15
+- Updated [orca#7023](https://github.com/stablyai/orca/pull/7023) — Fix project group move and management actions — 2026-11-15
+- Updated [orca#6900](https://github.com/stablyai/orca/pull/6900) — feat(sidebar): add ascending/descending order to workspace sort — 2026-11-15
+- Updated [orca#6903](https://github.com/stablyai/orca/pull/6903) — feat(sidebar): decouple groups from Group by with a Show groups toggle — 2026-11-15
+- Updated [orca#7015](https://github.com/stablyai/orca/pull/7015) — Folder card icons + non-destructive workspace archive — 2026-11-15
 - Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/7d4195999ceffb65d82fe5084d62f2e357792218) — Update feed (2026-11-14 05:10) — 2026-11-14
 - Opened [magpie#3](https://github.com/jtalborough/magpie/pull/3) — jco: builder templates magpie-code and magpie-cabinet — 2026-11-11
 - Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
@@ -48,16 +54,14 @@
 - Closed [maillard#3](https://github.com/jtalborough/maillard/pull/3) — Canonical maillard: AI AUTO roast + deploy from public repo — 2026-10-24
 - Closed [epi-videoCodec-ciscoExtended#28](https://github.com/PepperDash/epi-videoCodec-ciscoExtended/issues/28) — [BUG)-When EPI initializes while Codec is in a call the Active call. is not recognized and cannot be hung up. — 2026-10-21
 - Updated [paseo#1295](https://github.com/getpaseo/paseo/issues/1295) — Editable files + WYSIWYG markdown editing in the file viewer — 2026-10-17
-- Closed [maillard#2](https://github.com/jtalborough/maillard/pull/2) — AI drum suggestions, auto TP/drop detection, one-screen roasting view, cooling-fan confirm — 2026-10-16
-- Closed [maillard#1](https://github.com/jtalborough/maillard/pull/1) — fix(kaleido): stop turning short stalls into 6–32 s disconnects — 2026-10-16
 
 ### Private work
 
-Last 30 days: 216 commits across 15 active private repos.
+Last 30 days: 253 commits across 14 active private repos.
 
 Languages: Python 48% · TypeScript 20% · Go 16% · HTML 4% · JavaScript 3% · Shell 2% · PLpgSQL 1%.
 
-Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, Kubernetes, PostgreSQL, C#/.NET, Ansible, k3s.
+Tech in the mix: Python, GitHub Actions, Docker, TypeScript, React, PostgreSQL, Kubernetes, C#/.NET, Ansible, k3s.
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
