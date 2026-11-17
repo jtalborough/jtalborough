@@ -19,6 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Opened [goat#3673](https://github.com/goat-si/goat/pull/3673) — fix(agents): distinguish shared SSH terminals from remote agents — 2026-11-17
 - Updated [orca#6902](https://github.com/stablyai/orca/pull/6902) — feat(sidebar): add "Open as folder" to nested-repo import — 2026-11-15
 - Updated [orca#6898](https://github.com/stablyai/orca/pull/6898) — feat(sidebar): show project name on worktree rows in header-less views — 2026-11-15
 - Updated [orca#7023](https://github.com/stablyai/orca/pull/7023) — Fix project group move and management actions — 2026-11-15
