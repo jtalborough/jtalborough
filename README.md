@@ -19,6 +19,14 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Opened [orca#44072](https://github.com/stablyai/orca/pull/44072) — fix(sidebar): align folder and Git workspace card identities — 2026-11-18
+- Opened [orca#44071](https://github.com/stablyai/orca/issues/44071) — [Bug): Folder and Git workspace cards use inconsistent title alignment — 2026-11-18
+- Merged [maillard#11](https://github.com/jtalborough/maillard/pull/11) — Fingerprint Maillard dashboard assets across releases — 2026-11-18
+- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/c941f7f5bb39d93e3fc0a3393cfcff15f7dbda44) — Merge pull request #11 from jtalborough/fix/dashboard-asset-versioning — 2026-11-18
+- Closed [maillard#9](https://github.com/jtalborough/maillard/issues/9) — Fix charge-based timer and label printing/numbering workflow — 2026-11-18
+- Merged [maillard#10](https://github.com/jtalborough/maillard/pull/10) — Start roast time at charge and restore label printing — 2026-11-18
+- Pushed to [orca](https://github.com/jtalborough/orca/commit/47609055cf7761ff617a7cff8afe13ccb0382080) — test: remove low-value prefetch and cache bookkeeping tests (#43612) — 2026-11-17
+- Pushed to [goat](https://github.com/jtalborough/goat/commit/c3b0e8b421f689760bff16561096ef15c10cc4f9) — feat(desktop): opt into using the fork as the main GOAT app — 2026-11-17
 - Opened [goat#3673](https://github.com/goat-si/goat/pull/3673) — fix(agents): distinguish shared SSH terminals from remote agents — 2026-11-17
 - Updated [orca#6902](https://github.com/stablyai/orca/pull/6902) — feat(sidebar): add "Open as folder" to nested-repo import — 2026-11-15
 - Updated [orca#6898](https://github.com/stablyai/orca/pull/6898) — feat(sidebar): show project name on worktree rows in header-less views — 2026-11-15
@@ -42,7 +50,6 @@
 - Merged [omnigent#5](https://github.com/jtalborough/omnigent/pull/5) — github_scope write_branches globs and zygote harness sys.argv — 2026-11-10
 - Opened [omnigent#2](https://github.com/jtalborough/omnigent/issues/2) — Hermes zygote fork drops --conversation-id from sys.argv, so policy hooks and Omnigent MCP tools never load — 2026-11-10
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
-- Pushed to [maillard](https://github.com/jtalborough/maillard/commit/599d56fe5b365f3641d541b37c8b0bdef5da24f8) — Let drop labels carry a short letter series. (#8) — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
 - Merged [maillard#7](https://github.com/jtalborough/maillard/pull/7) — Print each bag's entered net weight — 2026-10-28
 - Updated [epi-utilities-devicemonitor#15](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/15) — Development — 2026-10-27
