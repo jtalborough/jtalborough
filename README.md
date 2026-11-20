@@ -19,6 +19,8 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Opened [orca#45518](https://github.com/stablyai/orca/pull/45518) — fix(sidebar): Show single-workspace projects as one row — 2026-11-20
+- Opened [orca#45515](https://github.com/stablyai/orca/issues/45515) — [Feature): Show single-workspace projects as one row inside project groups — 2026-11-20
 - Opened [orca#44072](https://github.com/stablyai/orca/pull/44072) — fix(sidebar): align folder and Git workspace card identities — 2026-11-18
 - Opened [orca#44071](https://github.com/stablyai/orca/issues/44071) — [Bug): Folder and Git workspace cards use inconsistent title alignment — 2026-11-18
 - Pushed to [maillard](https://github.com/jtalborough/maillard/commit/c941f7f5bb39d93e3fc0a3393cfcff15f7dbda44) — Merge pull request #11 from jtalborough/fix/dashboard-asset-versioning — 2026-11-18
