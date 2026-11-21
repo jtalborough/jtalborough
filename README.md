@@ -19,6 +19,10 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Pushed to [orca](https://github.com/jtalborough/orca/commit/248499d1125f9cd752c547bfe7578123c23e3578) — docs(cli): specify the environment for remote worktree parents — 2026-11-21
+- Opened [orca#1](https://github.com/jtalborough/orca/pull/1) — docs(cli): explain how to keep agent handoffs under their parent — 2026-11-21
+- Opened [orca#46349](https://github.com/stablyai/orca/pull/46349) — docs(cli): explain how to keep agent handoffs under their parent — 2026-11-21
+- Opened [orca#46348](https://github.com/stablyai/orca/issues/46348) — Document parent selection for related agent handoffs — 2026-11-21
 - Opened [orca#45518](https://github.com/stablyai/orca/pull/45518) — fix(sidebar): Show single-workspace projects as one row — 2026-11-20
 - Opened [orca#45515](https://github.com/stablyai/orca/issues/45515) — [Feature): Show single-workspace projects as one row inside project groups — 2026-11-20
 - Opened [orca#44072](https://github.com/stablyai/orca/pull/44072) — fix(sidebar): align folder and Git workspace card identities — 2026-11-18
@@ -27,7 +31,6 @@
 - Merged [maillard#11](https://github.com/jtalborough/maillard/pull/11) — Fingerprint Maillard dashboard assets across releases — 2026-11-18
 - Closed [maillard#9](https://github.com/jtalborough/maillard/issues/9) — Fix charge-based timer and label printing/numbering workflow — 2026-11-18
 - Merged [maillard#10](https://github.com/jtalborough/maillard/pull/10) — Start roast time at charge and restore label printing — 2026-11-18
-- Pushed to [orca](https://github.com/jtalborough/orca/commit/47609055cf7761ff617a7cff8afe13ccb0382080) — test: remove low-value prefetch and cache bookkeeping tests (#43612) — 2026-11-17
 - Pushed to [goat](https://github.com/jtalborough/goat/commit/c3b0e8b421f689760bff16561096ef15c10cc4f9) — feat(desktop): opt into using the fork as the main GOAT app — 2026-11-17
 - Opened [goat#3673](https://github.com/goat-si/goat/pull/3673) — fix(agents): distinguish shared SSH terminals from remote agents — 2026-11-17
 - Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/7d4195999ceffb65d82fe5084d62f2e357792218) — Update feed (2026-11-14 05:10) — 2026-11-14
@@ -36,8 +39,8 @@
 - Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
 - Opened [omnigent#9](https://github.com/jtalborough/omnigent/pull/9) — fix: make Hermes per-turn subprocess timeout configurable — 2026-11-11
 - Opened [omnigent#7](https://github.com/jtalborough/omnigent/issues/7) — github_scope allows destructive gh api DELETE of git refs when allow_destructive is off — 2026-11-10
-- Pushed to [omnigent](https://github.com/jtalborough/omnigent/commit/e6ff6c14d46457af17412faff837080df56b7db1) — fix: apply allow_destructive to gh api DELETE of git refs (#8) — 2026-11-10
 - Merged [omnigent#8](https://github.com/jtalborough/omnigent/pull/8) — fix: apply allow_destructive to gh api DELETE of git refs — 2026-11-10
+- Pushed to [omnigent](https://github.com/jtalborough/omnigent/commit/2372dbeb362eab001164c0c1fbfcb6ac7abbad5b) — chore: retrigger CI for gh api destructive-delete fix — 2026-11-10
 - Merged [magpie#1](https://github.com/jtalborough/magpie/pull/1) — Builder setup: AGENTS.md, magpie-builder definition, test CI — 2026-11-10
 - Merged [omnigent#1](https://github.com/jtalborough/omnigent/pull/1) — Builder setup: fork rules and omnigent-builder definition — 2026-11-10
 - Closed [omnigent#3](https://github.com/jtalborough/omnigent/issues/3) — Hermes pre_tool_call plugin callback times out at 30s, so Omnigent policy ASKs fail closed before a human can answer — 2026-11-10
@@ -56,7 +59,6 @@
 - Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
 - Merged [maillard#4](https://github.com/jtalborough/maillard/pull/4) — Make public maillard canonical: AI auto, drum auto-apply, auto cooling fans — 2026-10-24
 - Closed [maillard#3](https://github.com/jtalborough/maillard/pull/3) — Canonical maillard: AI AUTO roast + deploy from public repo — 2026-10-24
-- Closed [epi-videoCodec-ciscoExtended#28](https://github.com/PepperDash/epi-videoCodec-ciscoExtended/issues/28) — [BUG)-When EPI initializes while Codec is in a call the Active call. is not recognized and cannot be hung up. — 2026-10-21
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
