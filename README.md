@@ -40,7 +40,6 @@
 - Opened [omnigent#9](https://github.com/jtalborough/omnigent/pull/9) — fix: make Hermes per-turn subprocess timeout configurable — 2026-11-11
 - Opened [omnigent#7](https://github.com/jtalborough/omnigent/issues/7) — github_scope allows destructive gh api DELETE of git refs when allow_destructive is off — 2026-11-10
 - Merged [omnigent#8](https://github.com/jtalborough/omnigent/pull/8) — fix: apply allow_destructive to gh api DELETE of git refs — 2026-11-10
-- Pushed to [omnigent](https://github.com/jtalborough/omnigent/commit/2372dbeb362eab001164c0c1fbfcb6ac7abbad5b) — chore: retrigger CI for gh api destructive-delete fix — 2026-11-10
 - Merged [magpie#1](https://github.com/jtalborough/magpie/pull/1) — Builder setup: AGENTS.md, magpie-builder definition, test CI — 2026-11-10
 - Merged [omnigent#1](https://github.com/jtalborough/omnigent/pull/1) — Builder setup: fork rules and omnigent-builder definition — 2026-11-10
 - Closed [omnigent#3](https://github.com/jtalborough/omnigent/issues/3) — Hermes pre_tool_call plugin callback times out at 30s, so Omnigent policy ASKs fail closed before a human can answer — 2026-11-10
