@@ -35,8 +35,8 @@
 - Opened [goat#3673](https://github.com/goat-si/goat/pull/3673) — fix(agents): distinguish shared SSH terminals from remote agents — 2026-11-17
 - Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/7d4195999ceffb65d82fe5084d62f2e357792218) — Update feed (2026-11-14 05:10) — 2026-11-14
 - Opened [magpie#3](https://github.com/jtalborough/magpie/pull/3) — jco: builder templates magpie-code and magpie-cabinet — 2026-11-11
-- Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
 - Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
+- Pushed to [magpie](https://github.com/jtalborough/magpie/commit/740e79cf8b3144c58451869501cd7b460f234a0c) — Fix the 5 failing tests on main (#2) — 2026-11-11
 - Opened [omnigent#9](https://github.com/jtalborough/omnigent/pull/9) — fix: make Hermes per-turn subprocess timeout configurable — 2026-11-11
 - Opened [omnigent#7](https://github.com/jtalborough/omnigent/issues/7) — github_scope allows destructive gh api DELETE of git refs when allow_destructive is off — 2026-11-10
 - Merged [omnigent#8](https://github.com/jtalborough/omnigent/pull/8) — fix: apply allow_destructive to gh api DELETE of git refs — 2026-11-10
@@ -56,8 +56,6 @@
 - Updated [epi-utilities-devicemonitor#4](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/4) — Create betabuilds.yml — 2026-10-27
 - Merged [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-25
 - Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
-- Merged [maillard#4](https://github.com/jtalborough/maillard/pull/4) — Make public maillard canonical: AI auto, drum auto-apply, auto cooling fans — 2026-10-24
-- Closed [maillard#3](https://github.com/jtalborough/maillard/pull/3) — Canonical maillard: AI AUTO roast + deploy from public repo — 2026-10-24
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
