@@ -33,6 +33,12 @@
 - Merged [maillard#10](https://github.com/jtalborough/maillard/pull/10) — Start roast time at charge and restore label printing — 2026-11-18
 - Pushed to [goat](https://github.com/jtalborough/goat/commit/c3b0e8b421f689760bff16561096ef15c10cc4f9) — feat(desktop): opt into using the fork as the main GOAT app — 2026-11-17
 - Opened [goat#3673](https://github.com/goat-si/goat/pull/3673) — fix(agents): distinguish shared SSH terminals from remote agents — 2026-11-17
+- Updated [orca#6902](https://github.com/stablyai/orca/pull/6902) — feat(sidebar): add "Open as folder" to nested-repo import — 2026-11-15
+- Updated [orca#6898](https://github.com/stablyai/orca/pull/6898) — feat(sidebar): show project name on worktree rows in header-less views — 2026-11-15
+- Updated [orca#7023](https://github.com/stablyai/orca/pull/7023) — Fix project group move and management actions — 2026-11-15
+- Updated [orca#6900](https://github.com/stablyai/orca/pull/6900) — feat(sidebar): add ascending/descending order to workspace sort — 2026-11-15
+- Updated [orca#6903](https://github.com/stablyai/orca/pull/6903) — feat(sidebar): decouple groups from Group by with a Show groups toggle — 2026-11-15
+- Updated [orca#7015](https://github.com/stablyai/orca/pull/7015) — Folder card icons + non-destructive workspace archive — 2026-11-15
 - Pushed to [curator-feed-903783cf](https://github.com/jtalborough/curator-feed-903783cf/commit/7d4195999ceffb65d82fe5084d62f2e357792218) — Update feed (2026-11-14 05:10) — 2026-11-14
 - Opened [magpie#3](https://github.com/jtalborough/magpie/pull/3) — jco: builder templates magpie-code and magpie-cabinet — 2026-11-11
 - Merged [magpie#2](https://github.com/jtalborough/magpie/pull/2) — Fix the 5 failing tests on main — 2026-11-11
