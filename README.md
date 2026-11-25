@@ -19,6 +19,8 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Opened [orca#49041](https://github.com/stablyai/orca/pull/49041) — feat(tasks): show and edit the Linear project in the issues view — 2026-11-25
+- Opened [orca#49040](https://github.com/stablyai/orca/issues/49040) — [Feature): Show and edit the project in the Linear issues view — 2026-11-25
 - Pushed to [orca](https://github.com/jtalborough/orca/commit/248499d1125f9cd752c547bfe7578123c23e3578) — docs(cli): specify the environment for remote worktree parents — 2026-11-21
 - Opened [orca#1](https://github.com/jtalborough/orca/pull/1) — docs(cli): explain how to keep agent handoffs under their parent — 2026-11-21
 - Opened [orca#46349](https://github.com/stablyai/orca/pull/46349) — docs(cli): explain how to keep agent handoffs under their parent — 2026-11-21
@@ -60,8 +62,6 @@
 - Updated [epi-utilities-devicemonitor#10](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/10) — fix: issue where join were +1 when linking config in sharp devices — 2026-10-27
 - Updated [epi-utilities-devicemonitor#9](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/9) — Add new workflows — 2026-10-27
 - Updated [epi-utilities-devicemonitor#4](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/4) — Create betabuilds.yml — 2026-10-27
-- Merged [maillard#5](https://github.com/jtalborough/maillard/pull/5) — Refresh README screenshots for the current dashboard — 2026-10-25
-- Merged [maillard#6](https://github.com/jtalborough/maillard/pull/6) — Keep AI auto through link blips and govern development — 2026-10-25
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
