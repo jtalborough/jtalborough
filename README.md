@@ -19,6 +19,7 @@
 ## Live feed
 
 <!-- FEED:START -->
+- Updated [codex#43057](https://github.com/openai/codex/issues/43057) — Codex desktop: pending question interface disappears after switching tabs and does not return — 2026-11-26
 - Opened [orca#49041](https://github.com/stablyai/orca/pull/49041) — feat(tasks): show and edit the Linear project in the issues view — 2026-11-25
 - Opened [orca#49040](https://github.com/stablyai/orca/issues/49040) — [Feature): Show and edit the project in the Linear issues view — 2026-11-25
 - Pushed to [orca](https://github.com/jtalborough/orca/commit/248499d1125f9cd752c547bfe7578123c23e3578) — docs(cli): specify the environment for remote worktree parents — 2026-11-21
@@ -58,10 +59,6 @@
 - Merged [maillard#8](https://github.com/jtalborough/maillard/pull/8) — Let drop labels use a short letter series — 2026-10-30
 - Closed [epi-biamp-tesira#102](https://github.com/PepperDash/epi-biamp-tesira/issues/102) — [BUG)-Configs with only Dialers will not properly subscribe for Dialer Feedback. — 2026-10-28
 - Merged [maillard#7](https://github.com/jtalborough/maillard/pull/7) — Print each bag's entered net weight — 2026-10-28
-- Updated [epi-utilities-devicemonitor#15](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/15) — Development — 2026-10-27
-- Updated [epi-utilities-devicemonitor#10](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/10) — fix: issue where join were +1 when linking config in sharp devices — 2026-10-27
-- Updated [epi-utilities-devicemonitor#9](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/9) — Add new workflows — 2026-10-27
-- Updated [epi-utilities-devicemonitor#4](https://github.com/PepperDash/epi-utilities-devicemonitor/pull/4) — Create betabuilds.yml — 2026-10-27
 <!-- FEED:END -->
 
 [LinkedIn](https://linkedin.com/in/jason-alborough) · [jason@designbuildautomate.io](mailto:jason@designbuildautomate.io)
